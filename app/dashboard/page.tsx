@@ -1,11 +1,18 @@
+import DashboardContent from '@/components/dashboard/Dashboardontent'
 import DashboardLayout from '@/components/dashboard/Layout'
 import React from 'react'
 
 function page() {
   return (
-    <div>
-      <DashboardLayout/>
-    </div>
+  
+      <DashboardLayout>
+        <div className="flex py-2 w-full">
+          <DashboardContent />
+        </div>
+        
+      </DashboardLayout>
+
+   
   )
 }
 

@@ -1,30 +1,30 @@
 import CustomModal from "../common/customModal";
 import { SubmitEvent, FormChangeEvent } from "@/types";
-interface NurseForm {
+interface Form {
   name: string;
   email: string;
   status: string;
 }
 
 interface CreateProps {
-  formData: NurseForm;
+  formData: Form;
   editId: string | null;
   onClose: () => void;
   onSubmit: (e: SubmitEvent) => void;
   handleChange: (e: FormChangeEvent) => void;
 }
-function CreateNurse({
+function WardFormModal({
   formData,
   handleChange,
   editId,
   onClose,
   onSubmit,
-}:CreateProps) {
+}: CreateProps) {
   return (
-    <div>
-      <CustomModal
-        title="Add Nurse"
-        editTitle="Edit Nurse"
+
+     <CustomModal
+        title="Add Wardboys"
+        editTitle="Edit Wardboys"
         editId={editId}
         onClose={onClose}
       >
@@ -74,8 +74,8 @@ function CreateNurse({
         </form>
 
       </CustomModal>
-    </div>
+
   );
 }
 
-export default CreateNurse;
+export default WardFormModal;

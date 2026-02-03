@@ -1,6 +1,6 @@
 import CustomModal from "../common/customModal";
 import { DeleteModalProps } from "@/types";
-function DeletePatientModal({ onCancel, onDelete }:DeleteModalProps) {
+function DeleteReceptionist({ onCancel, onDelete }:DeleteModalProps) {
   return (
     <CustomModal title="Confirm Delete" onClose={onCancel} >
       <p className="mb-4 font-semibold uppercase">Are you sure you want to delete?</p>
@@ -17,4 +17,4 @@ function DeletePatientModal({ onCancel, onDelete }:DeleteModalProps) {
   );
 }
 
-export default DeletePatientModal;
+export default DeleteReceptionist;

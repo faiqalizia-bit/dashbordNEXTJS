@@ -1,11 +1,11 @@
-export interface Patient {
+export interface Guard {
   _id?: string;
   name: string;
   email: string;
   status: string;
 }
 
-export const PatientType = {
+export const GuardType:Guard = {
     _id: "",
     name: "",
     email: "",

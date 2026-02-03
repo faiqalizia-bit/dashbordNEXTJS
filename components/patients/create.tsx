@@ -1,11 +1,25 @@
 import CustomModal from "../common/customModal";
+import { SubmitEvent, FormChangeEvent } from "@/types";
+interface Form {
+  name: string;
+  email: string;
+  status: string;
+}
+
+interface CreateProps {
+  formData: Form;
+  editId: string | null;
+  onClose: () => void;
+  onSubmit: (e: SubmitEvent) => void;
+  handleChange: (e: FormChangeEvent) => void;
+}
 function PatientFormModal({
   formData,
   handleChange,
   editId,
   onClose,
   onSubmit,
-}) {
+}: CreateProps) {
   return (
 
      <CustomModal
@@ -13,7 +27,6 @@ function PatientFormModal({
         editTitle="Edit Patients"
         editId={editId}
         onClose={onClose}
-        onSubmit={onSubmit}
       >
         <form onSubmit={onSubmit} className="flex flex-col gap-3">
           <input
@@ -50,7 +63,7 @@ function PatientFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-200 text-white px-3 py-1 rounded"
+              className="bg-gray-400 text-white px-3 py-1 rounded"
             >
               Cancel
             </button>

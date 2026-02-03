@@ -8,7 +8,6 @@ import {
   Card,
   // CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -25,7 +24,7 @@ const Login = () => {
   const [message, setMessage] = useState("");
   const [type, setType] = useState("");
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!email || !password) {

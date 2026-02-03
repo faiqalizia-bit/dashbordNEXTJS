@@ -8,15 +8,21 @@ import { useFormModal } from '@/components/common/useFormModal';
 import Pagination from '@/components/common/Pagination';
 import { createPatient,getPatients,updatePatient,deletePatient } from "@/srevices/patient";
 import PatientFormModal from "@/components/patients/create";
-import { PatientType } from "@/components/patients/type";
+import { Patient, PatientType } from "@/components/patients/type";
 import DeletePatientModal from "@/components/patients/delete";
 import { patientColumns } from "@/components/common/tablecolumn";
 
+
+interface PatientsResponse {
+  patients: Patient[];
+  totalPages: number;
+}
+
 function Patients() {
-  const [search, setSearch] = useState("");
-  const [deleted, setDeleted] = useState(false);
-  const [patients, setPatients] = useState([]);
-  const { page, setPage,totalPages, setTotalPages } = usePagination(1,1);
+  const [search, setSearch] = useState<string>("");
+  const [deleted, setDeleted] = useState<string | null>(null);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const { page, setPage,totalPages, setTotalPages } = usePagination(1);
   const { isOpen, editId, formData, handleChange, openAdd, openEdit, close } =
     useFormModal(PatientType);
 
@@ -33,14 +39,19 @@ function Patients() {
     [page, setTotalPages],
   );
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e:React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try {
-      if (editId) {
-        await updatePatient(editId, formData);
-      } else {
-        await createPatient(formData);
-      }
+        const payload = { ...(formData as unknown as Record<string, unknown>) } as Record<string, unknown>;
+        if (payload._id === "" || payload._id == null) delete payload._id;
+    
+        try {
+          console.log("Creating/updating doctor with payload:", payload);
+    
+          if (editId) {
+            await updatePatient(editId as string, payload);
+          } else {
+            await createPatient(payload);
+          }
       fetchPatients(page);
       close();
     } catch (err) {
@@ -50,6 +61,7 @@ function Patients() {
 
   const handleDelete = async () => {
     try {
+      if (!deleted) return;
       await deletePatient(deleted);
       fetchPatients(page);
       setDeleted(null);
@@ -62,8 +74,9 @@ function Patients() {
     (async () => {
       try {
         const res = await getPatients(page, 10);
-        setPatients(res.data.patients);
-        setTotalPages(res.data.totalPages);
+        const data: PatientsResponse = res.data;
+        setPatients(data.patients);
+        setTotalPages(data.totalPages);
       } catch (err) {
         console.error(err);
       }
@@ -80,9 +93,9 @@ function Patients() {
       <div className="mb-10 relative py-2">
         <h1 className="text-lg font-bold mb-4">
           {" "}
-          <div className="flex gap-[1px] items-center">
+          <div className="flex items-center">
             Dashbord
-            <span className="mt-[2px]">
+            <span className="mt-1">
               <MdKeyboardArrowRight />
             </span>
             Patients
@@ -106,11 +119,12 @@ function Patients() {
           </button>
         </div>
 
-        <StaticTable
+        <StaticTable<Patient>
           columns={patientColumns}
           data={filteredpatients}
           onEdit={(doc) =>
-            openEdit(doc._id, {
+            openEdit((doc._id as string) ?? null, {
+              _id: doc._id as string,
               name: doc.name,
               email: doc.email,
               status: doc.status,
@@ -128,7 +142,7 @@ function Patients() {
           <PatientFormModal
             formData={formData}
             handleChange={handleChange}
-            editId={editId}
+            editId={editId as string | null}
             onClose={close}
             onSubmit={handleSubmit}
           />

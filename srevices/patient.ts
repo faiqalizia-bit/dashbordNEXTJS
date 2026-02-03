@@ -10,7 +10,7 @@ export const getPatients = async (page = 1, limit = 10) => {
   }
 };
 
-export const createPatient = async (data:string) => {
+export const createPatient = async (data:Record<string, unknown>) => {
   try {
     const response = await API.post("/patients", data);
     return response;
@@ -20,7 +20,7 @@ export const createPatient = async (data:string) => {
   }
 };
 
-export const updatePatient = async (id:string, data:string) => {
+export const updatePatient = async (id:string, data:Record<string, unknown>) => {
   try {
     const response = await API.put(`/patients/${id}`, data);
     return response;

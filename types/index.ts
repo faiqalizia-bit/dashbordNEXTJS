@@ -21,6 +21,11 @@ export interface CustomModalProps {
   children: ReactNode;
 }
 
+export interface DeleteModalProps {
+  onCancel: () => void;
+  onDelete: () => void;
+}
+
 
 //    Form Modal Hook
 

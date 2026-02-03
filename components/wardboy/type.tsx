@@ -1,11 +1,11 @@
-export interface Patient {
+export interface WardBoy {
   _id?: string;
   name: string;
   email: string;
   status: string;
 }
 
-export const PatientType = {
+export const WardBoyType:WardBoy = {
     _id: "",
     name: "",
     email: "",

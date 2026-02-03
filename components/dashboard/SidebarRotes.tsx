@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { RiDashboardFill } from "react-icons/ri";
 import { FaUserNurse, FaPeopleCarry } from "react-icons/fa";
-import { MdPersonalInjury, MdApartment, MdSecurity } from "react-icons/md";
+import { MdPersonalInjury,  MdSecurity } from "react-icons/md";
 
 const routes = [
   { title: "Dashboard", icon: <RiDashboardFill />, path: "/dashboard" },
@@ -11,7 +11,6 @@ const routes = [
   { title: "Nurses", icon: <FaUserNurse />, path: "/nurse" },
   { title: "Patients", icon: <MdPersonalInjury />, path: "/patient" },
   { title: "Ward Boys", icon: <FaPeopleCarry />, path: "/wardboys" },
-  { title: "Departments", icon: <MdApartment />, path: "/department" },
   { title: "Guards", icon: <MdSecurity />, path: "/guards" },
   { title: "Receptionist", icon: <MdSecurity />, path: "/receptionist" },
 ];

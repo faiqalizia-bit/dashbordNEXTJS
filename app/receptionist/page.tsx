@@ -6,67 +6,70 @@ import usePagination from '@/components/common/usePagination';
 import StaticTable from '@/components/common/table';
 import { useFormModal } from '@/components/common/useFormModal';
 import Pagination from '@/components/common/Pagination';
-import { guardColumns } from "@/components/common/tablecolumn";
-import DeleteGuardModal from "@/components/guards/delete";
-import { getGuards,deleteGuard,updateGuard,createGuard } from "@/srevices/guard";
-import { Guard, GuardType } from "@/components/guards/type";
-import CreateGuard from "@/components/guards/create";
-interface GuardsResponse {
-  guards: Guard[];
-  totalPages: number;
+import { getReceptionists,createReceptionist, deleteReceptionist,updateReceptionist } from "@/srevices/receptionist";
+import CreatReceptionist from "@/components/Receptionist/create";
+import {  ReceptionistType } from "@/components/Receptionist/type";
+import { receptionistColumns } from "@/components/common/tablecolumn";
+import DeleteReceptionist from "@/components/Receptionist/delete";
+import type { Receptionist } from "@/components/Receptionist/type";
+
+interface ReceptionistResponse{
+    receptionists: Receptionist[];
+    totalPages: number;
 }
-function Guards() {
+
+function Receptionist() {
   const [search, setSearch] = useState<string>("");
   const [deleted, setDeleted] = useState<string | null>(null);
-  const [guard, setGuard] = useState<Guard[]>([]);
+  const [receptionist, setReceptionist] = useState<Receptionist[]>([]);
   const { page, setPage, totalPages, setTotalPages } = usePagination(1);
 
   const { isOpen, editId, formData, handleChange, openAdd, openEdit, close } =
-    useFormModal(GuardType);
+    useFormModal(ReceptionistType);
 
-  const fetchGuards = async (pageNumber = page) => {
+  const fetchReceptionists = async (pageNumber = page) => {
     try {
-      const res = await getGuards(pageNumber, 10);
-      setGuard(res.data.guards);
+      const res = await getReceptionists(pageNumber, 10);
+      setReceptionist(res.data.receptionists);
       setTotalPages(res.data.totalPages);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e:React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const payload = { ...(formData as unknown as Record<string, unknown>) } as Record<string, unknown>;
-        if (payload._id === "" || payload._id == null) delete payload._id;
-    
-        try {
-          console.log("Creating/updating doctor with payload:", payload);
-    
-          if (editId) {
-            await updateGuard(editId as string, payload);
-          } else {
-            await createGuard(payload);
-          }
-    
-          fetchGuards(page);
-          close();
-        } catch (err: unknown) {
-          console.error("Failed to create/update doctor:", err);
-          // show user-friendly error
-          let message = "Failed to save doctor";
-          if (err && typeof err === "object") {
-            const e = err as { response?: { data?: { message?: string } }; message?: string };
-            message = e.response?.data?.message || e.message || message;
-          }
-          alert(message);
-        }
-      };
+   const payload = { ...(formData as unknown as Record<string, unknown>) } as Record<string, unknown>;
+       if (payload._id === "" || payload._id == null) delete payload._id;
+   
+       try {
+         console.log("Creating/updating doctor with payload:", payload);
+   
+         if (editId) {
+           await updateReceptionist(editId as string, payload);
+         } else {
+           await createReceptionist(payload);
+         }
+   
+         fetchReceptionists(page);
+         close();
+       } catch (err: unknown) {
+         console.error("Failed to create/update doctor:", err);
+         // show user-friendly error
+         let message = "Failed to save doctor";
+         if (err && typeof err === "object") {
+           const e = err as { response?: { data?: { message?: string } }; message?: string };
+           message = e.response?.data?.message || e.message || message;
+         }
+         alert(message);
+       }
+     };
 
-  const handleDelete = async (): Promise<void> => {
+  const handleDelete = async () => {
     try {
-      if (!deleted) return;
-      await deleteGuard(deleted);
-      fetchGuards(page);
+       if (!deleted) return;
+      await deleteReceptionist(deleted);
+      fetchReceptionists(page);
       setDeleted(null);
     } catch (err) {
       console.error(err);
@@ -76,17 +79,16 @@ function Guards() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await getGuards(page, 10);
-        const data : GuardsResponse =res.data
-        setGuard(data.guards);
-        setTotalPages(data.totalPages);
+        const res = await getReceptionists(page, 10);
+        setReceptionist(res.data.receptionists);
+        setTotalPages(res.data.totalPages);
       } catch (err) {
         console.error(err);
       }
     })();
   }, [page, setTotalPages]);
 
-  const filteredGuards = guard.filter(
+  const filteredReceptionist = receptionist.filter(
     (doc) =>
       doc.name.toLowerCase().includes(search.toLowerCase()) ||
       doc.email.toLowerCase().includes(search.toLowerCase()),
@@ -102,7 +104,7 @@ function Guards() {
             <span className="mt-[2px]">
               <MdKeyboardArrowRight />{" "}
             </span>
-            Guards
+            Receptionists
           </div>
         </h1>
 
@@ -117,17 +119,17 @@ function Guards() {
 
           <button
             onClick={openAdd}
-            className="bg-orange-700 text-neutral  px-8 rounded"
+            className="bg-orange-700 text-white  px-8 rounded"
           >
             Add
           </button>
         </div>
 
         <StaticTable
-          columns={guardColumns}
-          data={filteredGuards}
+          columns={receptionistColumns}
+          data={filteredReceptionist}
           onEdit={(doc) =>
-            openEdit((doc._id as string)?? null, {
+            openEdit((doc._id  as string)?? null, {
               name: doc.name,
               email: doc.email,
               status: doc.status,
@@ -135,15 +137,11 @@ function Guards() {
           }
           onDelete={(id) => setDeleted(id)}
         />
-
         <Pagination
-          page={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
+        page={page} totalPages={totalPages} onPageChange={setPage}
         />
-
         {isOpen && (
-          <CreateGuard
+          <CreatReceptionist
             formData={formData}
             handleChange={handleChange}
             editId={editId as string | null}
@@ -153,7 +151,7 @@ function Guards() {
         )}
 
         {deleted && (
-          <DeleteGuardModal
+          <DeleteReceptionist
             onCancel={() => setDeleted(null)}
             onDelete={handleDelete}
           />
@@ -163,4 +161,4 @@ function Guards() {
   );
 }
 
-export default Guards;
+export default Receptionist;

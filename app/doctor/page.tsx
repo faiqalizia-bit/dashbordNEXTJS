@@ -190,9 +190,11 @@ function Doctor() {
    <div className="mb-10 relative py-2">
         <h1 className="text-lg font-bold mb-4">
           {" "}
-          <div className="flex gap-[1px] items-center">
+          <div className="flex  
+           items-center">
             Dashboard
-            <span className="mt-[2px]">
+            <span className="mt-1
+            ">
               <MdKeyboardArrowRight />{" "}
             </span>
             Doctors

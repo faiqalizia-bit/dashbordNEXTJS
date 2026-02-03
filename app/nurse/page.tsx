@@ -7,15 +7,19 @@ import usePagination from '@/components/common/usePagination';
 import StaticTable from '@/components/common/table';
 import { useFormModal } from '@/components/common/useFormModal';
 import Pagination from '@/components/common/Pagination';
-import { NurseType } from "@/components/nurses/type";
+import { Nurse, NurseType } from "@/components/nurses/type";
 import CreateNurse from "@/components/nurses/create";
 import DeleteNurseModal from "@/components/nurses/delete";
 import { getNurses, createNurse, updateNurse, deleteNurse } from "@/srevices/nurse";
 import { nurseColumns } from "@/components/common/tablecolumn";
+interface NursesResponse {
+  nurses: Nurse[];
+  totalPages: number;
+}
 function Nurses() {
-  const [nurses, setNurses] = useState([]);
-  const [search, setSearch] = useState("");
-  const [deleted, setDeleted] = useState(null);
+  const [nurses, setNurses] = useState<Nurse[]>([]);
+  const [search, setSearch] = useState<string>("");
+  const [deleted, setDeleted] = useState<string | null>(null);
   const { page, setPage, totalPages, setTotalPages } = usePagination(1);
   const { isOpen, editId, formData, handleChange, openAdd, openEdit, close } =
     useFormModal(NurseType);
@@ -33,8 +37,9 @@ function Nurses() {
     (async () => {
       try {
         const res = await getNurses(page, 10);
-        setNurses(res.data.nurses);
-        setTotalPages(res.data.totalPages);
+        const data: NursesResponse = res.data;
+        setNurses(data.nurses);
+        setTotalPages(data.totalPages);
       } catch (err) {
         console.error(err);
       }
@@ -54,7 +59,8 @@ function Nurses() {
     close();
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
+    if (!deleted) return;
     await deleteNurse(deleted);
     fetchNurses(page);
     setDeleted(null);
@@ -88,11 +94,11 @@ function Nurses() {
         </button>
       </div>
 
-      <StaticTable
+      <StaticTable<Nurse>
         columns={nurseColumns}
         data={filteredNurses}
         onEdit={(nurse) =>
-          openEdit(nurse._id, {
+          openEdit((nurse._id as string)?? null, {
             name: nurse.name,
             email: nurse.email,
             status: nurse.status,
@@ -107,7 +113,7 @@ function Nurses() {
         <CreateNurse
           formData={formData}
           handleChange={handleChange}
-          editId={editId}
+          editId={editId as string | null}
           onClose={close}
           onSubmit={handleSubmit}
         />
