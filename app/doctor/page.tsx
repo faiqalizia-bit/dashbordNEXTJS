@@ -123,68 +123,6 @@ function Doctor() {
       doc.email.toLowerCase().includes(search.toLowerCase()),
   );
 
-
-  
-
-  //    const [search, setSearch] = useState("");
-  //     const [deleted, setDeleted] = useState(false);
-  // const [doctors, setDoctors] = useState([]);
-  // const { page, setPage, totalPages, setTotalPages } = usePagination(1, 1);
-  // const { isOpen, editId, formData, handleChange, openAdd, openEdit, close } =
-  //   useFormModal(DoctorType);
-
-  // const fetchDoctors = useCallback(
-  //   async (pageNumber = page) => {
-  //     try {
-  //       const res = await getDoctors(pageNumber, 10);
-  //       setDoctors(res.data.doctors);
-  //       setTotalPages(res.data.totalPages || 1);
-  //     } catch (err) {
-  //       console.error(err);
-  //     }
-  //   },
-  //   [page, setTotalPages],
-  // );
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   if (editId) {
-  //     await updateDoctor(editId, formData);
-  //   } else {
-  //     await createDoctor(formData);
-  //   }
-
-  //   fetchDoctors(page);
-  //   close();
-  // };
-
-  // const handleDelete = async () => {
-  //   try {
-  //     await deleteDoctor(deleted);
-  //     fetchDoctors(page);
-  //     setDeleted(null);
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       const res = await getDoctors(page, 10);
-  //       setDoctors(res.data.doctors);
-  //       setTotalPages(res.data.totalPages);
-  //     } catch (err) {
-  //       console.error(err);
-  //     }
-  //   })();
-  // }, [page, setTotalPages]);
-
-  // const filteredDoctors = doctors.filter(
-  //   (doc) =>
-  //     doc.name.toLowerCase().includes(search.toLowerCase()) ||
-  //     doc.email.toLowerCase().includes(search.toLowerCase()),
-  // );
   return (
     <DashboardLayout>
    <div className="mb-10 relative py-2">
@@ -211,7 +149,7 @@ function Doctor() {
           />
           <button
             onClick={openAdd}
-            className="bg-orange-700 text-neutral  px-8 rounded"
+            className="bg-orange-700 text-white  px-8 rounded"
           >
             Add
           </button>

@@ -1,47 +1,80 @@
- import { FaHospital } from "react-icons/fa";
-import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+import { FaHospital } from "react-icons/fa";
+import { IoChevronBack, IoChevronForward, IoClose } from "react-icons/io5";
 import SidebarRoutes from "./SidebarRotes";
 import { FiLogOut } from "react-icons/fi";
-
 
 type SidebarProps = {
   collapsed: boolean;
   setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
-  onLogout: () => void; 
+  onLogout: () => void;
+  mobileOpen?: boolean;
+  setMobileOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 };
-function Sidebar({ collapsed, setCollapsed, onLogout }:SidebarProps) {
+
+function Sidebar({
+  collapsed,
+  setCollapsed,
+  onLogout,
+  mobileOpen = false,
+  setMobileOpen,
+}: SidebarProps) {
   return (
-    <div
-      className={`bg-[#f3f4f6] flex flex-col transition-all pt-10 duration-300
-      ${collapsed ? "w-17"
-         : "w-[17%]"} p-4`}
-    >
-      <div className="flex items-center justify-between mb-4">
-        {!collapsed && (
-          <h1 className="text-blue-950 font-bold text-2xl flex items-center gap-2">
-            <FaHospital />   Care Health
-          </h1>
-        )}
+    <>
+      {/* Backdrop on mobile */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          onClick={() => setMobileOpen && setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`flex flex-col fixed top-0 left-0 h-screen z-50 transform transition-transform duration-300
+          bg-linear-to-b from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl
+          ${mobileOpen ? "translate-x-0 w-64" : "-translate-x-full w-64"}
+          lg:translate-x-0 md:translate-x-0 lg:static md:static lg:h-screen md:h:screen  ${collapsed ? "lg:w-[80px] md:w-10" : "lg:w-[260px] md:w-65 "}`}
+      >
+        <div className="flex items-center justify-between px-4 py-5 border-b border-white/10">
+          {!collapsed && (
+            <h1 className="text-xl font-bold flex items-center gap-2 tracking-wide">
+              <FaHospital />
+              <span>Care Health</span>
+            </h1>
+          )}
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="p-2 rounded-lg hover:bg-white/10 transition hidden  md:inlineflex"
+              aria-label="Toggle collapse"
+            >
+              {collapsed ? <IoChevronForward /> : <IoChevronBack />}
+            </button>
+
+            <button
+              onClick={() => setMobileOpen && setMobileOpen(false)}
+              className="p-2 rounded-lg hover:bg-white/10 transition lg:hidden"
+              aria-label="Close sidebar"
+            >
+              <IoClose />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-4">
+          <SidebarRoutes collapsed={collapsed} onNavigate={() => setMobileOpen && setMobileOpen(false)} />
+        </div>
 
         <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="text-xl m-auto"
+          onClick={onLogout}
+          className="mt-auto flex items-center gap-3 p-3 rounded-lg hover:bg-red-500/20 text-slate-300 hover:text-red-400 transition"
         >
-          {collapsed ? <IoChevronForward /> : <IoChevronBack />}
+          <FiLogOut size={18} />
+          {!collapsed && "Logout"}
         </button>
-      </div>
-
-      <SidebarRoutes collapsed={collapsed} />
-
-      <button
-        onClick={onLogout}
-        className="mt-auto flex items-center gap-3 p-3 hover:text-orange-700 rounded-md"
-      >
-        <FiLogOut />
-        {/* Logout */}
-        {!collapsed && "Logout"}
-      </button>
-    </div>
+      </aside>
+    </>
   );
 }
 

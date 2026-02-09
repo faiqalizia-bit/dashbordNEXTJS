@@ -118,9 +118,10 @@ function DashboardContent() {
 
   return (
     <div className="bg-neutral w-full">
-      <h1 className="text-2xl pl-5 font-bold py-2">Dashboard</h1>
+      <h1 className="text-xl sm:text-2xl lg:text-3xl pl-5 font-bold py-2">Dashboard</h1>
 
-      <div className="grid grid-cols-3 gap-5 w-full p-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full p-5">
+        
         {cards.map((item, idx) => (
           <Card
             key={idx}
@@ -133,7 +134,7 @@ function DashboardContent() {
         ))}
       </div>
 
-      <div className="flex gap-5 w-full p-5">
+      <div className="flex flex-col lg:flex-row gap-5 w-full p-5">
         {doctors.length > 0 && (
           <Card title="Doctors" value={doctors.length} recentCard>
             <StaticTable
@@ -144,7 +145,7 @@ function DashboardContent() {
           </Card>
         )}
 
-        <Card title="Patients" value={patients.length} recentCard>
+        <Card title="Patients" className="w-full lg:w-1/2" value={patients.length} recentCard >
           {patients.length > 0 && (
             <StaticTable
               columns={patientColumns}
