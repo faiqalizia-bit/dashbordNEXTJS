@@ -30,12 +30,12 @@ function Sidebar({
       )}
 
       <aside
-        className={`flex flex-col fixed top-0 left-0 h-screen z-50 transform transition-transform duration-300
+        className={`flex flex-col z-50 fixed top-0  left-0 h-screen  transform transition-transform duration-300
           bg-linear-to-b from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl
           ${mobileOpen ? "translate-x-0 w-64" : "-translate-x-full w-64"}
-          lg:translate-x-0 md:translate-x-0 lg:static md:static lg:h-screen md:h:screen  ${collapsed ? "lg:w-[80px] md:w-10" : "lg:w-[260px] md:w-65 "}`}
+          lg:translate-x-0 md:translate-x-0 lg:static md:static lg:h-screen md:h:screen  ${collapsed ? "lg:w-20 md:w-15" : "lg:w-65  "}`}
       >
-        <div className="flex items-center justify-between px-4 py-5 border-b border-white/10">
+        <div className="flex items-center justify-between px-4 py-5 border-b-2 border-white/10">
           {!collapsed && (
             <h1 className="text-xl font-bold flex items-center gap-2 tracking-wide">
               <FaHospital />
@@ -46,15 +46,15 @@ function Sidebar({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="p-2 rounded-lg hover:bg-white/10 transition hidden  md:inlineflex"
+              className="p-2 rounded-lg hover:bg-white/10 transition hidden md:inline-flex "
               aria-label="Toggle collapse"
             >
-              {collapsed ? <IoChevronForward /> : <IoChevronBack />}
+              {!collapsed ? <IoChevronForward /> : <IoChevronBack />}
             </button>
 
             <button
               onClick={() => setMobileOpen && setMobileOpen(false)}
-              className="p-2 rounded-lg hover:bg-white/10 transition lg:hidden"
+              className="p-2 rounded-lg hover:bg-white/10 transition md:hidden"
               aria-label="Close sidebar"
             >
               <IoClose />

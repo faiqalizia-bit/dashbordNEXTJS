@@ -4,12 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import API from "@/api";
-
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -18,17 +17,17 @@ import { Input } from "@/components/ui/input";
 
 export default function Register() {
   const router = useRouter();
-
+  
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
   });
 
-  const [message, setMessage] = useState("");
-  const [type, setType] = useState("");
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -62,76 +61,17 @@ export default function Register() {
       localStorage.setItem("users", JSON.stringify(res.data.user));
       localStorage.setItem("token", res.data.token);
       router.push("/dashboard");
-    } catch (error) {
+    } catch (error:unknown) {
       setType("error");
-      setMessage(error.response?.data?.message || "Server error");
+       if (axios.isAxiosError(error)) {
+        setMessage(error.response?.data?.message || "Invalid email or password");
+      } else if (error instanceof Error) {
+        setMessage(error.message);
+      } else {
+        setMessage("Invalid email or password");
+      }
     }
   };
-
-  // const [form, setForm] = useState({
-  //   name: "",
-  //   email: "",
-  //   password: "",
-  // });
-
-  // const [message, setMessage] = useState("");
-  // const [type, setType] = useState("");
-
-  //   const handleChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   setForm((prev) => ({
-  //     ...prev,
-  //     [name]: value,
-  //   }));
-  // };
-
-  // const handleRegister = (e) => {
-  //   e.preventDefault();
-
-  //   const { name, email, password } = form;
-
-  //   if (!name || !email || !password) {
-  //     setType("error");
-  //     setMessage("All fields are required");
-  //     return;
-  //   }
-
-  //   if (password.length < 6) {
-  //     setType("error");
-  //     setMessage("Password must be at least 6 characters");
-  //     return;
-  //   }
-
-  //   const users =
-  //     JSON.parse(localStorage.getItem("users") || "[]");
-
-  //   const userExists = users.some((u) => u.email === email);
-
-  //   if (userExists) {
-  //     setType("error");
-  //     setMessage("Email already registered");
-  //     return;
-  //   }
-
-  //   const newUser= {
-  //     name,
-  //     email,
-  //     password,
-  //   };
-
-  //   localStorage.setItem(
-  //     "users",
-  //     JSON.stringify([...users, newUser])
-  //   );
-
-  //   setType("success");
-  //   setMessage("Registration successful");
-
-  //   setTimeout(() => {
-  //     router.push("/dashboard");
-  //   }, 1000);
-  // };
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -162,9 +102,6 @@ export default function Register() {
                 {" "}
                 Create your account
               </CardTitle>
-              {/* <CardDescription className="text-center">
-                Create your account
-              </CardDescription> */}
             </CardHeader>
 
             <CardContent>

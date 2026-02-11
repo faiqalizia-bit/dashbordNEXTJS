@@ -149,7 +149,7 @@ function Doctor() {
           />
           <button
             onClick={openAdd}
-            className="bg-orange-700 text-white  px-8 rounded"
+            className="bg-[#293b69] text-white  px-8 rounded"
           >
             Add
           </button>

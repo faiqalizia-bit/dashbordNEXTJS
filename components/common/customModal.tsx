@@ -17,8 +17,8 @@ function CustomModal({
   children,
 }: CustomModalProps) {
   return (
-    <div className="fixed inset-0 bg-black opacity-90 flex items-center justify-center">
-      <div className="bg-white p-5 rounded w-88">
+    <div className="fixed z-59 inset-0 bg-black opacity-90 flex items-center justify-center">
+      <div className="bg-white p-5 rounded w-88 ">
         <div className="flex justify-between mb-4">
           <h2 className="font-bold text-xl">
             {editId ? editTitle : title}

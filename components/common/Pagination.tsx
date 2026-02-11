@@ -15,7 +15,7 @@ function Pagination({ page, totalPages, onPageChange }:{page:number, totalPages:
         <button
           key={p}
           onClick={() => onPageChange(p)}
-          className={`px-3 py-1 border rounded ${page === p ? "bg-orange-700 text-white" : ""}`}
+          className={`px-3 py-1 border rounded ${page === p ? "bg-[#293b69] text-white" : ""}`}
         >
           {p}
         </button>

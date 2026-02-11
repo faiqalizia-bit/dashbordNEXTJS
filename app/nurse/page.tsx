@@ -49,14 +49,30 @@ function Nurses() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (editId) {
-      await updateNurse(editId as string, formData as unknown as Record<string, unknown>);
-    } else {
-      await createNurse(formData as unknown as Record<string, unknown>);
-    }
+     const payload = { ...(formData as unknown as Record<string, unknown>) } as Record<string, unknown>;
+    if (payload._id === "" || payload._id == null) delete payload._id;
 
-    fetchNurses(page);
-    close();
+    try {
+      console.log("Creating/updating doctor with payload:", payload);
+
+      if (editId) {
+        await updateNurse(editId as string, payload);
+      } else {
+        await createNurse(payload);
+      }
+
+      fetchNurses(page);
+      close();
+    } catch (err: unknown) {
+      console.error("Failed to create/update doctor:", err);
+      // show user-friendly error
+      let message = "Failed to save doctor";
+      if (err && typeof err === "object") {
+        const e = err as { response?: { data?: { message?: string } }; message?: string };
+        message = e.response?.data?.message || e.message || message;
+      }
+      alert(message);
+    }
   };
 
   const handleDelete = async (): Promise<void> => {
@@ -88,7 +104,7 @@ function Nurses() {
 
         <button
           onClick={openAdd}
-          className="bg-orange-700 text-white px-8 rounded"
+          className="bg-[#293b69] text-white px-8 rounded"
         >
           Add
         </button>

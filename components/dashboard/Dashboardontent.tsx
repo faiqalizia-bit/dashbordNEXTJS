@@ -11,6 +11,9 @@ import StaticTable from "../common/table";
 import { doctorColumns } from "../common/tablecolumn";
 import { patientColumns } from "../common/tablecolumn";
 import { ReactNode } from "react";
+interface User {
+  name: string;
+}
 
 interface CountStats {
   total: number;
@@ -40,11 +43,26 @@ function DashboardContent() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
+   const [user, setUser] = useState<User>({ name: "Guest" });
+
+   
+  useEffect(() => {
+    const storedUser = localStorage.getItem("users");
+    if (storedUser) {
+      try {
+        const parsedUser= JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error("Failed to parse user from localStorage:", error);
+        setUser({ name: "Guest" });
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await API.get<{ data: DashboardStats }>("/dashboard/stats",);
+        const res = await API.get("/dashboard/stats",);
         setStats(res.data);
       } catch (err) {
         console.error("Failed to load dashboard stats", err);
@@ -119,6 +137,7 @@ function DashboardContent() {
   return (
     <div className="bg-neutral w-full">
       <h1 className="text-xl sm:text-2xl lg:text-3xl pl-5 font-bold py-2">Dashboard</h1>
+      <p>Welcome back 👋, {user.name.toUpperCase()}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full p-5">
         
@@ -136,16 +155,17 @@ function DashboardContent() {
 
       <div className="flex flex-col lg:flex-row gap-5 w-full p-5">
         {doctors.length > 0 && (
-          <Card title="Doctors" value={doctors.length} recentCard>
+          <Card title="Doctors" className="w-full lg:w-1/2" value={doctors.length} recentCard viewCard viewAllLink = "/doctor">
             <StaticTable
               columns={doctorColumns}
               data={doctors.slice(0, 5)}
               showActions={false}
+              
             />
           </Card>
         )}
 
-        <Card title="Patients" className="w-full lg:w-1/2" value={patients.length} recentCard >
+        <Card title="Patients" className="w-full lg:w-1/2" value={patients.length} recentCard viewCard viewAllLink = "/patient">
           {patients.length > 0 && (
             <StaticTable
               columns={patientColumns}

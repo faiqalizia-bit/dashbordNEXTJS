@@ -38,11 +38,11 @@ export default function SidebarRoutes({
 						className={` flex items-center gap-3 p-3 rounded-md transition-all tracking-[1px]
               ${
 								isActive
-									? "bg-linear-to-r from-orange-500 to-orange-600 text-white shadow-lg"
+									? "bg-linear-to-r from-slate-700 to-slate-600 text-white shadow-lg"
 									: "text-slate-300 hover:bg-white/10 hover:text-white"
 							}`}
 					>
-						<span className="text-lg font-bold">{item.icon}</span>
+						<span className="text-lg font-bold md:text-sm">{item.icon}</span>
 						{!collapsed && <span>{item.title}</span>}
 					</Link>
 				);

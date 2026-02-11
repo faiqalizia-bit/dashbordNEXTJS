@@ -113,7 +113,7 @@ function Patients() {
 
           <button
             onClick={openAdd}
-            className="text-white bg-orange-700 px-8 rounded"
+            className="text-white bg-[#293b69] px-8 rounded"
           >
             Add
           </button>

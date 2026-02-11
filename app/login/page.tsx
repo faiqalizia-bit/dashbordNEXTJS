@@ -6,15 +6,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  // CardAction,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
 import API from "@/api";
+import axios from "axios";
 
 const Login = () => {
   const router = useRouter();
@@ -40,36 +39,19 @@ const Login = () => {
       localStorage.setItem("users", JSON.stringify(res.data.user));
       localStorage.setItem("token", res.data.token);
       router.push("/dashboard");
-    } catch (error) {
+    } catch (error: unknown) {
       setType("error");
-      setMessage(error.response?.data?.message || "Invalid email or password");
+      if (axios.isAxiosError(error)) {
+        setMessage(error.response?.data?.message || "Invalid email or password");
+      } else if (error instanceof Error) {
+        setMessage(error.message);
+      } else {
+        setMessage("Invalid email or password");
+      }
     }
   };
 
-  // const [email, setEmail] = useState("");
-  // const [password, setPassword] = useState("");
-  // const [message, setMessage] = useState("");
-  // const [type, setType] = useState<"success" | "error" | "">("");
-
-  //  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-
-  //   const users = JSON.parse(localStorage.getItem("users") || "[]");
-
-  //   const foundUser = users.find(
-  //     (user) => user.email === email && user.password === password
-  //   );
-
-  //   if (foundUser) {
-  //     localStorage.setItem("loggedUser", JSON.stringify(foundUser));
-  //     setType("success");
-  //     setMessage("Login successful");
-  //     router.push("/dashboard");
-  //   } else {
-  //     setType("error");
-  //     setMessage("Invalid email or password");
-  //   }
-  // }
+  
   return (
     <div className="min-h-screen w-full rounded-none shadow-none border-none flex">
       {/* left panel */}
@@ -97,9 +79,7 @@ const Login = () => {
             <CardTitle className="text-center text-2xl font-semi bold">
               Sign in to your account
             </CardTitle>
-            {/* <CardDescription className="text-center">
-              Continue to your dashboard
-            </CardDescription> */}
+    
           </CardHeader>
 
           <CardContent>
@@ -173,124 +153,3 @@ const Login = () => {
 
 export default Login;
 
-// <div className="min-h-screen flex items-center justify-center bg-gray-100">
-//   <Card className="w-full max-w-sm">
-//     <CardHeader>
-//       <CardTitle className="text-center">Login</CardTitle>
-//       <CardDescription className="text-center">
-//         Enter your credentials to continue
-//       </CardDescription>
-//     </CardHeader>
-
-//     <CardContent>
-//       {message && (
-//         <p
-//           className={`mb-4 text-sm p-2 rounded ${
-//             type === "error"
-//               ? "bg-red-100 text-red-600"
-//               : "bg-green-100 text-green-600"
-//           }`}
-//         >
-//           {message}
-//         </p>
-//       )}
-
-//       <form onSubmit={handleLogin} className="space-y-4">
-//         <Input
-//           type="email"
-//           placeholder="Email"
-//           onChange={(e) => setEmail(e.target.value)}
-//         />
-
-//         <Input
-//           type="password"
-//           placeholder="Password"
-//           onChange={(e) => setPassword(e.target.value)}
-//         />
-
-//         <Button type="submit" className="w-full bg-orange-600">
-//           Login
-//         </Button>
-//       </form>
-//     </CardContent>
-
-//     <CardFooter className="justify-center text-sm">
-//       Not registered?
-//       <Link href="/register" className="ml-1 text-orange-600">
-//         Register
-//       </Link>
-//     </CardFooter>
-//   </Card>
-// </div>
-
-//     <div className="min-h-screen w-full bg-gray-100">
-//   <Card className="min-h-screen w-full rounded-none shadow-none border-none flex">
-
-//
-//     <div className="hidden md:flex w-1/2 bg-orange-600 items-center justify-center flex-col text-black p-8">
-//       <h1 className="text-4xl font-bold tracking-wide">
-//         Health<span className="text-orange-200">Care</span>
-//       </h1>
-
-//       <p className="mt-3 text-sm opacity-90 text-center max-w-xs text-white">
-//         Your trusted hospital management system for better patient care.
-//       </p>
-
-//       <div className="mt-6 text-sm opacity-75 text-white">
-//         © 2026 HealthCare System
-//       </div>
-//     </div>
-
-//
-//     <div className="w-full md:w-1/2 flex items-center justify-center p-6 bg-white">
-//       <Card className="w-full max-w-sm shadow-none border-none">
-//         <CardHeader>
-//           <CardTitle className="text-center">Login</CardTitle>
-//           <CardDescription className="text-center">
-//             Enter your credentials to continue
-//           </CardDescription>
-//         </CardHeader>
-
-//         <CardContent>
-//           {message && (
-//             <p
-//               className={`mb-4 text-sm p-2 rounded ${
-//                 type === "error"
-//                   ? "bg-red-100 text-red-600"
-//                   : "bg-green-100 text-green-600"
-//               }`}
-//             >
-//               {message}
-//             </p>
-//           )}
-
-//           <form onSubmit={handleLogin} className="space-y-4">
-//             <Input
-//               type="email"
-//               placeholder="Email"
-//               onChange={(e) => setEmail(e.target.value)}
-//             />
-
-//             <Input
-//               type="password"
-//               placeholder="Password"
-//               onChange={(e) => setPassword(e.target.value)}
-//             />
-
-//             <Button type="submit" className="w-full bg-orange-600">
-//               Login
-//             </Button>
-//           </form>
-//         </CardContent>
-
-//         <CardFooter className="justify-center text-sm">
-//           Not registered?
-//           <Link href="/register" className="ml-1 text-orange-600">
-//             Register
-//           </Link>
-//         </CardFooter>
-//       </Card>
-//     </div>
-
-//   </Card>
-// </div>
