@@ -5,7 +5,7 @@ import { RiDashboardFill } from "react-icons/ri";
 import { FaUserDoctor } from "react-icons/fa6";
 import { BsReception4 } from "react-icons/bs";
 import { FaUserNurse, FaPeopleCarry } from "react-icons/fa";
-import { MdPersonalInjury, MdSecurity } from "react-icons/md";
+import { MdPersonalInjury, MdSecurity,  MdSettings } from "react-icons/md";
 
 const routes = [
 	{ title: "Dashboard", icon: <RiDashboardFill />, path: "/dashboard" },
@@ -15,6 +15,7 @@ const routes = [
 	{ title: "Ward Boys", icon: <FaPeopleCarry />, path: "/wardboys" },
 	{ title: "Guards", icon: <MdSecurity />, path: "/guards" },
 	{ title: "Receptionist", icon: <BsReception4 />, path: "/receptionist" },
+	{ title: "Setting", icon: < MdSettings />, path: "/setting" },
 ];
 
 export default function SidebarRoutes({

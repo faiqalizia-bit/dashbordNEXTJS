@@ -27,7 +27,7 @@ interface DashboardStats {
   patients: CountStats;
   wardBoys: CountStats;
   departments: CountStats;
-  guards: CountStats;
+  recptionists: CountStats;
 }
 
 
@@ -125,11 +125,11 @@ function DashboardContent() {
           inActiveCount: stats.departments.inactive,
         },
         {
-          title: "Guards",
+          title: "Recptionists",
           icon: <MdSecurity />,
-          totalCount: stats.guards.total,
-          activeCount: stats.guards.active,
-          inActiveCount: stats.guards.inactive,
+          totalCount: stats.recptionists.total,
+          activeCount: stats.recptionists.active,
+          inActiveCount: stats.recptionists.inactive,
         },
       ]
     : [];
@@ -137,7 +137,7 @@ function DashboardContent() {
   return (
     <div className="bg-neutral w-full">
       <h1 className="text-xl sm:text-2xl lg:text-3xl pl-5 font-bold py-2">Dashboard</h1>
-      <p>Welcome back 👋, {user.name.toUpperCase()}</p>
+      <p className="ml-5">Welcome back 👋, {user.name.toUpperCase()}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full p-5">
         
