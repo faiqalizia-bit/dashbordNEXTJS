@@ -9,7 +9,7 @@ function DeletePatientModal({ onCancel, onDelete }:DeleteModalProps) {
           className="px-3 py-1  rounded bg-gray-400 text-neutral"
         >Cancel</button>
         <button onClick={onDelete}
-          className="px-3 py-1  rounded bg-orange-700 text-white">
+          className="px-3 py-1  rounded bg-[#293b69] text-white">
           Delete
         </button>
       </div>

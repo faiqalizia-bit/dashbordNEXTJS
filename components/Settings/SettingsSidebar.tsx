@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 const menu = [
   { name: "Account Settings", path: "/setting/account" },
   { name: "Security", path: "/setting/security" },
-  { name: "Theme", path: "/setting/theme" },
+  // { name: "Theme", path: "/setting/theme" },
 ]
 
 export default function SettingsSidebar() {
