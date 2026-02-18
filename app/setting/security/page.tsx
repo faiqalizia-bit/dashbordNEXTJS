@@ -4,6 +4,8 @@ import {updateUser } from "@/srevices/user";
 
 export default function PasswordPage() {
   const [userId, setUserId] = useState("");
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState<string>("");
@@ -15,7 +17,11 @@ export default function PasswordPage() {
  
   useEffect(() => {
     const authUser = JSON.parse(localStorage.getItem("users") || "{}");
-    if (authUser?.id) setUserId(authUser.id);
+    if (authUser?.id) {
+      setUserId(authUser.id);
+      setUserName(authUser.name || "");
+      setUserEmail(authUser.email || "");
+    }
   }, []);
 
   const handleChangePassword = async () => {
@@ -41,6 +47,8 @@ export default function PasswordPage() {
 
     try {
       const res = await updateUser(userId, {
+        name: userName,
+        email: userEmail,
         password: newPassword,
       });
 
@@ -52,7 +60,7 @@ export default function PasswordPage() {
       setNewPassword("");
       setConfirmPassword("");
 
-    } catch (err: unknown) {
+    } catch {
       setType("error");
       setMsg("Password update failed");
     }
@@ -102,7 +110,7 @@ export default function PasswordPage() {
 
       <button
         onClick={handleChangePassword}
-        className="mt-6 bg-gray-600 hover:bg-gray-800 text-white px-6 py-2 rounded-lg"
+        className="mt-6 bg-(--setbtn) hover:bg-gray-500 text-(--buttontext) px-6 py-2 rounded-lg"
       >
         Save Changes
       </button>

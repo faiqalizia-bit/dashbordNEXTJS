@@ -22,7 +22,7 @@ function StaticTable<T extends object = Record<string, unknown>>({
   showActions = true,
 }: TablePropsType<T>) {
   return (
-    <div className="bg-white rounded-md border overflow-x-auto">
+    <div className="bg-white rounded-md border overflow-x-auto dark:bg-gray-900">
       <Table>
         <TableHeader>
           <TableRow className="bg-muted">
@@ -55,14 +55,14 @@ function StaticTable<T extends object = Record<string, unknown>>({
                   <TableCell className="space-x-2">
                     <button
                       onClick={() => onEdit?.(row as T)}
-                      className="px-3 py-1 text-black"
+                      className="px-3 py-1 text-black dark:text-white"
                     >
                       <MdOutlineModeEditOutline size={18} />
                     </button>
 
                     <button
                       onClick={() => onDelete?.(String((row as unknown as Record<string, unknown>)._id))}
-                      className="px-3 py-1 text-black"
+                      className="px-3 py-1 text-black  dark:text-white"
                     >
                       <AiTwotoneDelete size={18} />
                     </button>

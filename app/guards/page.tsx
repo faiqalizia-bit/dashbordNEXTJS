@@ -117,7 +117,7 @@ function Guards() {
 
           <button
             onClick={openAdd}
-            className="bg-[#293b69] text-neutral  px-8 rounded"
+            className="bg-(--button) text-(--buttontext) px-8 rounded"
           >
             Add
           </button>

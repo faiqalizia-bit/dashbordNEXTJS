@@ -67,7 +67,7 @@ function WardFormModal({
             >
               Cancel
             </button>
-            <button className="bg-orange-700 text-white px-4 py-1 rounded">
+            <button className="bg-(--button) text-(--buttontext) px-4 py-1 rounded">
               {editId ? "Save" : "Add"}
             </button>
           </div>

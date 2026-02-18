@@ -16,7 +16,7 @@ export default function SettingsLayout({
           <SettingsSidebar />
         </div>
 
-        <div className="col-span-9 bg-white p-8 h-full rounded-xl shadow">
+        <div className="col-span-9 bg-[rgb(255,249,249)] p-8 h-full rounded-xl shadow dark:bg-[rgb(55,55,55)]">
           {children}
         </div>
       </div>

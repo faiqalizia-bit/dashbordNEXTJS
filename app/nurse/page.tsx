@@ -104,7 +104,7 @@ function Nurses() {
 
         <button
           onClick={openAdd}
-          className="bg-[#293b69] text-white px-8 rounded"
+          className="bg-(--button) text-(--buttontext)  px-8 rounded"
         >
           Add
         </button>

@@ -34,7 +34,7 @@ function Card({
   };
   return (
     <div
-      className={`w-full bg-white p-4 sm:p-5 lg:p-6 rounded shadow ${className}`}
+      className={`w-full bg-white p-4 sm:p-5 lg:p-6 rounded shadow dark:bg-black/90 ${className}`}
       key={idx}
     >
       <div className="flex justify-between items-center mb-2">
@@ -42,7 +42,7 @@ function Card({
           {!recentCard && (
             <span
               style={{ fontSize: "12px" }}
-              className="text-sm sm:text-base lg:text-lg bg-[#293b69] rounded-full p-2 text-white"
+              className="text-sm sm:text-base lg:text-lg bg-(--button) rounded-full p-2 text-white"
             >
               {icon}{" "}
             </span>

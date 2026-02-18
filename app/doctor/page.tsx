@@ -143,13 +143,13 @@ function Doctor() {
           <input
             type="text"
             placeholder="Search..."
-            className="border p-2 rounded w-full"
+            className="border p-2 rounded w-full "
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <button
             onClick={openAdd}
-            className="bg-[#293b69] text-white  px-8 rounded"
+            className="bg-(--button) text-(--buttontext)  px-8 rounded"
           >
             Add
           </button>

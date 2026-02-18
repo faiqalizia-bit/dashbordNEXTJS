@@ -68,7 +68,7 @@ function CreateDoctor({
           >
             Cancel
           </button>
-          <button className="bg-[#293b69] text-white px-4 py-1 rounded">
+          <button className="bg-(--button) text-(--buttontext) px-4 py-1 rounded">
             {editId ? "Save" : "Add"}
           </button>
         </div>

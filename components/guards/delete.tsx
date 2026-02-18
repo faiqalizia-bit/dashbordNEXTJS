@@ -9,7 +9,7 @@ function DeleteGuardModal({ onCancel, onDelete }:DeleteModalProps) {
             className="px-3 py-1  rounded bg-grey-400 text-neutral"
           >Cancel</button>
           <button onClick={onDelete}
-            className="px-3 py-1  bg-[#293b69] text-white">
+            className="px-3 py-1  bg-(--button) text-(--buttontext)">
             Delete
           </button>
         </div>

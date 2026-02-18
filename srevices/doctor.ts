@@ -1,18 +1,15 @@
 import API from "@/api";
 
-export const getDoctors = async (page = 1, limit = 10) => {
 
-    try {
-    const response = await API.get(
-      `/doctors?page=${page}&limit=${limit}`
-    );
-    return response;
-  } catch (error) {
-    console.error("Error fetching doctors:", error);
-    throw error;
+export const getDoctors= async (page=1, limit=10) =>{
+  try{
+    const res = await API.get(`/doctors?page=${page}&limit=${limit}`)
+    return res
+  }catch (error)
+  { console.error("Error fetching doctors:", error)
+    throw error
   }
-};
-
+}
 
 export const createDoctor = async (data: Record<string, unknown>) => {
   try {

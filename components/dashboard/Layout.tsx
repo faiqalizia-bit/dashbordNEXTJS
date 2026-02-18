@@ -63,7 +63,7 @@ function DashboardLayout({ children }: DashboardLayoutProps) {
         setMobileOpen={setMobileOpen}
       />
 
-      <div className=" bg-linear-to-r from-slate-50 via-slate-100 to-slate-50 w-full p-5 overflow-auto relative">
+      <div className=" bg-white w-full p-5 overflow-auto relative dark:bg-gray-900">
      
         
         {/* <TopBar

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getProfile, updateUser } from "@/srevices/user";
+import { updateUser } from "@/srevices/user";
 
 interface User {
   id: string;
@@ -9,7 +9,11 @@ interface User {
 }
 
 export default function AccountSettingsPage() {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState<User>({
+    id: "",
+    name: "",
+    email: "",
+  });
 
   console.log("step-1", user);
   const [type, setType] = useState("");
@@ -52,12 +56,13 @@ console.log("step-3", user)
         "users",
         JSON.stringify({ id: user.id, name: user.name, email: user.email }),
       );
-    } catch (err: any) {
-      setMsg(err.response?.data?.message || "Update failed");
+    } catch (err: Error | unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Update failed";
+      setMsg(errorMessage);
       setType("error");
     }
   };
-  console.log("🚀 ~ handleUpdate ~ handleUpdate:", handleUpdate);
+  
   
 
   return (
@@ -96,7 +101,7 @@ console.log("step-3", user)
 
       <button
         onClick={handleUpdate}
-        className="mt-6 bg-gray-500 hover:bg-gray-700 text-white px-6 py-2 rounded-lg"
+        className="mt-6 bg-(--setbtn) hover:bg-gray-500 text-(--buttontext) px-6 py-2 rounded-lg"
       >
         Update
       </button>
