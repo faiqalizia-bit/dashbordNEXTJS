@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
-// import TopBar from "./TopBar";
+import TopBar from "./TopBar";
 
 
 interface DashboardLayoutProps {
@@ -17,7 +17,7 @@ export interface User {
 function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState<boolean>(false);
-  // const [open, setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
 
@@ -64,14 +64,22 @@ function DashboardLayout({ children }: DashboardLayoutProps) {
       />
 
       <div className=" bg-white w-full p-5 overflow-auto relative dark:bg-gray-900">
+
+        {/* <button
+          onClick={() => setMobileOpen(true)}
+          className=" md:hidden  rounded-sm text-xs bg-slate-900 text-white py-1 px-2 mb-2"
+          aria-label="Open sidebar"
+        >
+          ☰
+        </button> */}
      
         
-        {/* <TopBar
+        <TopBar
           user={user}
           open={open}
           setOpen={setOpen}
           setMobileOpen={setMobileOpen}
-        /> */}
+        />
         {children}
        
       </div>

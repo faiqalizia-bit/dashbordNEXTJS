@@ -25,46 +25,26 @@ export const fetchLogs = async (): Promise<Log[]> => {
     throw error;
   }
 };
-// export const clearLogs = async () => {
-//   try {
-//     const res = await API.delete("/logs");
-//     return res;
-//   } catch (error) {
-//     console.error("Error deleting logs:", error );
-//     throw error
-//   }
-// };
-
-// export const clearLog = async (id: string) => {
-//   try {
-//     const res = await API.delete(`/logs/${id}`);
-//     return res;
-//   } catch (error) {
-//     console.error("Error deleting log:", error);
-//     throw error
-//   }
-// };
+export const clearLogs = async () => {
+  try {
+    const res = await API.delete("/logs");
+    return res;
+  } catch (error) {
+    console.error("Error deleting logs:", error );
+    throw error
+  }
+};
 
 export const clearLog = async (id: string) => {
   try {
     const res = await API.delete(`/logs/${id}`);
-    return res.data;
-  } catch (error: any) {
-    console.error("Error deleting log:", error?.response?.data || error.message);
-    throw error?.response?.data?.message || "Failed to delete log";
+    return res;
+  } catch (error) {
+    console.error("Error deleting log:", error);
+    throw error
   }
 };
 
-// delete all logs
-export const clearLogs = async () => {
-  try {
-    const res = await API.delete("/logs");
-    return res.data;
-  } catch (error: any) {
-    console.error("Error deleting logs:", error?.response?.data || error.message);
-    throw error?.response?.data?.message || "Failed to delete logs";
-  }
-};
 
 
 

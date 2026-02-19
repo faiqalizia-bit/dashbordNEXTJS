@@ -1,10 +1,13 @@
 "use client"
-import { useEffect, useState } from "react"
 import { useTheme } from "./context/context"
 
 export default function ThemeSwitcher() {
 
-const  { theme, setThemeMode }  = useTheme()
+const themeContext = useTheme()
+  if (!themeContext) {
+    return null
+  }
+  const { theme, setThemeMode } = themeContext
   
 
 
@@ -45,21 +48,3 @@ const  { theme, setThemeMode }  = useTheme()
 
 
 
-  // const [theme, setTheme] = useState("light")
-
-
-  // useEffect(() => {
-  //   const root = window.document.documentElement
-  //   if (theme === "dark") {
-  //     root.classList.add("dark")
-  //     localStorage.setItem("theme", "dark")
-  //   } else {
-  //     root.classList.remove("dark")
-  //     localStorage.setItem("theme", "light")
-  //   }
-  // }, [theme])
-
-  //   useEffect(() => {
-  //   const savedTheme = localStorage.getItem("theme")
-  //   if (savedTheme) setTheme(savedTheme)
-  // }, [])

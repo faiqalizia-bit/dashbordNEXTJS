@@ -54,9 +54,9 @@ function CreatReceptionist({
             required
             className="border p-2 rounded"
           >
-            <option value="">Select Status</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
+            <option value="" className="dark:bg-black">Select Status</option>
+            <option value="Active" className="dark:bg-black">Active</option>
+            <option value="Inactive" className="dark:bg-black">Inactive</option>
           </select>
 
           <div className="flex justify-end gap-2">

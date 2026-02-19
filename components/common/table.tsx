@@ -5,14 +5,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
 import { MdOutlineModeEditOutline } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import NoDataRow from "./NoDataRow";
 
-
-import type { TableProps as TablePropsType } from '@/types';
+import type { TableProps as TablePropsType } from "@/types";
 
 function StaticTable<T extends object = Record<string, unknown>>({
   columns = [],
@@ -35,12 +34,20 @@ function StaticTable<T extends object = Record<string, unknown>>({
 
         <TableBody>
           {data.length === 0 ? (
-            <NoDataRow />
+            <tr>
+              <td colSpan={4} className="text-center py-10 text-gray-500">
+                No Data Found
+              </td>
+            </tr>
           ) : (
             data.map((row) => (
-              <TableRow key={String((row as unknown as Record<string, unknown>)._id)}>
+              <TableRow
+                key={String((row as unknown as Record<string, unknown>)._id)}
+              >
                 {columns.map((col) => {
-                  const value = (row as unknown as Record<string, unknown>)[col.key as string];
+                  const value = (row as unknown as Record<string, unknown>)[
+                    col.key as string
+                  ];
                   const v = value as unknown as T[keyof T];
                   return (
                     <TableCell key={String(col.key)}>
@@ -61,7 +68,13 @@ function StaticTable<T extends object = Record<string, unknown>>({
                     </button>
 
                     <button
-                      onClick={() => onDelete?.(String((row as unknown as Record<string, unknown>)._id))}
+                      onClick={() =>
+                        onDelete?.(
+                          String(
+                            (row as unknown as Record<string, unknown>)._id,
+                          ),
+                        )
+                      }
                       className="px-3 py-1 text-black  dark:text-white"
                     >
                       <AiTwotoneDelete size={18} />

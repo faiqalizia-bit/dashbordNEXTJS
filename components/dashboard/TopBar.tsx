@@ -1,6 +1,7 @@
 import UserMenu from "./UserMenu";
 import { User } from "./Layout";
 import { FaFacebookF, FaGithub, FaLinkedinIn, FaBell } from "react-icons/fa";
+import ThemeSwitch from "../common/maintheme";
 
 type prop = {
   user: User;
@@ -32,7 +33,7 @@ function TopBar({ user, open, setOpen, setMobileOpen }: prop) {
         </div>
       </div> */}
 
-        <div className="hidden md:flex items-center gap-4 md:mr-auto md:ml-6">
+        {/* <div className="hidden md:flex items-center gap-4 md:mr-auto md:ml-6">
           <a
             href="#"
             className="w-7 h-6 flex text-slate-300 items-center justify-center rounded-full bg-[#293b69] hover:bg-black transition hover:text-white"
@@ -53,16 +54,15 @@ function TopBar({ user, open, setOpen, setMobileOpen }: prop) {
           >
             <FaLinkedinIn />
           </a>
-        </div>
+        </div> */}
 
          <div className="absolute top-0 right-6  ">
           <div className="absolute top-0 right-6  flex items-center gap-4 mr-3">
-          <input
-            placeholder="Search..."
-            className="bg-white px-2  rounded-lg focus:ring-2  w-34"
-          />
-          <FaBell className="text-lg cursor-pointer" />
+          <ThemeSwitch/>
           </div>
+
+         
+
           <div>
           <div
             className="cursor-pointer bg-gray-700 w-6 h-6 rounded-full text-white flex items-center justify-center"
@@ -70,6 +70,8 @@ function TopBar({ user, open, setOpen, setMobileOpen }: prop) {
           >
             {user.name.charAt(0).toUpperCase()}
           </div>
+          
+
           </div>
 
           {open && <UserMenu user={user} />}

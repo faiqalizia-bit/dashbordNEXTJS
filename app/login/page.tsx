@@ -69,9 +69,9 @@ const Login = () => {
         </div>
       </div>
       {/* right    panel */}
-      <div className="w-full md:w-1/2 flex flex-col items-center mt-10 p-6 bg-white">
+      <div className="w-full md:w-1/2 flex flex-col items-center mt-10 p-6 bg-white dark:bg-black">
         <div className="flex flex-col gap-1 justify-center items-center mb-5">
-          <h1 className="font-bold text-2xl"> 👋 Welcome !</h1>
+          <h1 className="font-bold text-2xl dark:white"> 👋 Welcome !</h1>
           Enter your credentials to continue
         </div>
         <Card className="w-full max-w-sm shadow-none border-2">
