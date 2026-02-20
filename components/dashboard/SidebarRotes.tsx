@@ -17,6 +17,7 @@ const routes = [
 	{ title: "Receptionist", icon: <BsReception4 />, path: "/receptionist" },
 	{ title: "Setting", icon: < MdSettings />, path: "/setting" },
 	{ title: "Logs", icon: < MdSettings />, path: "/logs" },
+	{ title: "Chats", icon: < MdSettings />, path: "/chat" },
 ];
 
 export default function SidebarRoutes({
