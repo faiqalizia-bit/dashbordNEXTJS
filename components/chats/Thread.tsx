@@ -7,6 +7,7 @@ import {
   createOrGetDirectConversation,
   Conversation,
 } from "@/srevices/chat";
+
 import { getUsers } from "@/srevices/user";
 
 interface User {
@@ -30,7 +31,7 @@ const Thread = ({ onSelectConversation }: Props) => {
   const [activeTab, setActiveTab] = useState<"conversations" | "users">("conversations");
   const [creatingChat, setCreatingChat] = useState<string | null>(null);
 
-  // Get logged-in user from localStorage
+
   useEffect(() => {
     const userStr = localStorage.getItem("users");
     if (userStr) {
@@ -62,16 +63,12 @@ const Thread = ({ onSelectConversation }: Props) => {
 
     fetchConversations();
 
-    // Auto-refresh conversations every 5 seconds
-    const interval = setInterval(fetchConversations, 5000);
-
-    return () => clearInterval(interval);
   }, [userId]);
 
   const fetchUsers = async () => {
     try {
       const data = await getUsers();
-      // Filter out current user
+     
       const filtered = (data || []).filter(
         (user: User) => (user._id || user.id) !== userId
       );
@@ -100,9 +97,8 @@ const Thread = ({ onSelectConversation }: Props) => {
       );
 
       if (conversation) {
-        // Refresh conversations
-        const convs = await getUserConversations(userId);
-        setConversations(convs);
+        
+       
         //deselect user and go back to conversations
         setActiveTab("conversations");
         onSelectConversation(conversation);
@@ -117,12 +113,12 @@ const Thread = ({ onSelectConversation }: Props) => {
     }
   };
 
-  const getInitial = (name?: string) => {
+const getInitial = (name?: string) => {
   if (!name) return "?";
   return name.charAt(0).toUpperCase();
 };
 
-const getConversationName = (conv: Conversation) => {
+const getConversationName = (conv: Conversation, userId: string) => {
   if (conv.type === "group") return conv.name || "Group Chat";
 
   const otherUser = conv.participants.find(
@@ -132,7 +128,11 @@ const getConversationName = (conv: Conversation) => {
   return otherUser?.name || "Direct Chat";
 };
 
-  const filteredConversations = conversations.filter((conv) =>
+  
+
+  const filteredConversations = conversations
+  .filter((conv) => conv.lastMessage) 
+  .filter((conv) =>
     conv.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -208,7 +208,7 @@ const getConversationName = (conv: Conversation) => {
     minute: "2-digit",
   });
 
-  const conversationName = getConversationName(conv);
+  const conversationName = getConversationName(conv, userId);
 
   return (
     <div
@@ -227,9 +227,7 @@ const getConversationName = (conv: Conversation) => {
           {conversationName}
         </p>
         <p className="text-xs text-gray-500 truncate">
-          {conv.type === "group"
-            ? `${conv.participants.length} members`
-            : "Direct Message"}
+          {conv.lastMessage?.text || "No messages yet"}
         </p>
         <p className="text-xs text-gray-400">{timeStr}</p>
       </div>
@@ -283,52 +281,3 @@ export default Thread;
 
 
 
-// import { threads } from "@/static-data/thread";
-// import { Search } from "lucide-react";
-
-// const Thread = () => {
-//   return (
-//     <div className="w-80 bg-white dark:bg-gray-800 border-r p-5 flex flex-col ">
-//       {/* Header */}
-//       <div className="flex justify-between items-center mb-5">
-//         <h2 className="text-xl font-semibold">Conversations</h2>
-//       </div>
-//       <div className="relative mb-6">
-//         <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-//         <input
-//           type="text"
-//           placeholder="Search..."
-//           className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl focus:outline-none"
-//         />
-//       </div>
-
-//       <div className="flex flex-col gap-4 overflow-y-auto">
-//         {threads.map((users, index) => (
-//           <div
-//             key={index}
-//             className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
-//           >
-//             <div className="min-w-10 min-h-10 rounded-full bg-[#151f33] text-white flex items-center justify-center font-semibold">
-//               {users.name.charAt(0)}
-//             </div>
-//             <div className="flex-1">
-//               <p className="font-medium text-sm">
-//                 {users.name.length > 10
-//                   ? users.name.slice(0, 10) + "..."
-//                   : users.name}
-//               </p>
-//               <p className="text-xs text-gray-500 ">
-//                 {users.Recent.length > 10
-//                   ? users.Recent.slice(0, 10) + "..."
-//                   : users.Recent}
-//               </p>
-//             </div>
-//             <span className="text-xs text-gray-400">{users.time}</span>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Thread;

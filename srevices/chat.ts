@@ -6,6 +6,11 @@ export interface Conversation {
   type: "direct" | "group";
   participants: string[];
   lastActivity: string;
+  lastMessage?: {
+    text: string;
+    sender: string;
+    createdAt: string;
+  };
 }
 
 export interface Message {
@@ -63,7 +68,11 @@ export const getMessages = async (
 // Send Message
 export const sendMessage = async (data: {
   conversationId: string;
-  senderId: string;
+   senderId: {
+    _id: string;
+    name: string;
+    avatar?: string;
+  };
   type?: "text" | "image" | "file" | "system";
   content: string;
   replyTo?: string | null;
