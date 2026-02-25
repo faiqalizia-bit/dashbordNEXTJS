@@ -1,5 +1,7 @@
 "use client";
 
+import { connectSocket, getSocket } from "@/lib/socket";
+
 import { useEffect, useState } from "react";
 import {
   getMessages,
@@ -33,13 +35,21 @@ const ChatRoom = ({ conversation }: Props) => {
   const [userId, setUserId] = useState<string>("");
   const [userMap, setUserMap] = useState<Record<string, User>>({});
 
-  // Get logged-in user from localStorage
+ 
+
+
+
   useEffect(() => {
     const userStr = localStorage.getItem("users");
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
         setUserId(user._id || user.id || "");
+        const token = localStorage.getItem("token"); 
+
+  if (token) {
+    connectSocket(token);
+  }
       } catch (e) {
         console.error("Error parsing user from localStorage:", e);
       }
@@ -99,46 +109,48 @@ const ChatRoom = ({ conversation }: Props) => {
     
   }, [conversation, userId, userMap]);
 
-  const handleSend = async () => {
-    if (!conversation || !input.trim() || !userId) {
-      // setError("Cannot send message");
-      return;
+  useEffect(() => {
+  if (!conversation) return;
+
+  const socket = getSocket();
+
+  // Join room manually (extra safety)
+  socket.emit("joinConversation", conversation._id);
+
+  socket.on("receiveMessage", (message) => {
+    if (message.conversationId === conversation._id) {
+      setMessages((prev) => [...prev, message]);
     }
+  });
 
-    const messageContent = input.trim();
-    setInput("");
-    setError(null);
-
-    try {
-      const currentUser = userMap[userId];
-      const newMessage = await sendMessage({
-        conversationId: conversation._id,
-        senderId: {
-          _id: userId,
-          name: currentUser?.name || "You",
-          avatar: currentUser?.avatar,
-        },
-        type: "text",
-        content: messageContent,
-      });
-
-      if (newMessage) {
-        // Add sender details to the message
-        const enrichedMessage: MessageWithSender = {
-          ...newMessage,
-          senderName: currentUser?.name || "You",
-          senderAvatar: currentUser?.avatar,
-        };
-        setMessages((prev) => [...prev, enrichedMessage]);
-      } else {
-        setError("Failed to send message");
-      }
-    } catch (err) {
-      setError("Error sending message");
-      setInput(messageContent); 
-      console.error("Send message error:", err);
-    }
+  return () => {
+    socket.off("receiveMessage");
   };
+}, [conversation]);
+
+
+const handleSend = async () => {
+  if (!conversation || !input.trim() || !userId) return;
+
+  const messageContent = input.trim();
+  setInput("");
+
+  try {
+    const currentUser = userMap[userId];
+
+    const newMessage = await sendMessage({
+      conversationId: conversation._id,
+      senderId: userId,
+      type: "text",
+      content: messageContent,
+    });
+
+    if (!newMessage) return;
+  } catch (err) {
+    console.error("Send message error:", err);
+  }
+};
+
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -205,7 +217,7 @@ const getConversationName = () => {
             {msg.senderId !== userId && (
               <div className="flex">
                 <div className="w-10 h-10 rounded-full bg-[#151f33] text-white flex items-center justify-center font-semibold text-sm">
-                  {msg.senderName?.charAt(0).toUpperCase() || "?"}
+                  {getConversationName().charAt(0).toUpperCase()}
                 </div>
               </div>
             )}
