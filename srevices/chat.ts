@@ -2,6 +2,7 @@ import API from "@/api";
 
 
 export interface Conversation {
+  name:string,
   _id: string;
   type: "direct" | "group";
   participants: string[];
@@ -54,10 +55,11 @@ export const getUserConversations = async (
 
 
 export const getMessages = async (
-  conversationId: string
+  conversationId: string,page: number,
+  limit: number
 ): Promise<Message[]> => {
   try {
-    const res = await API.get(`/chat/messages/${conversationId}`);
+    const res = await API.get(`/chat/messages/${conversationId}?page=${page}&limit=${limit}`);
     return res.data || [];
   } catch (error) {
     console.error("Fetch Messages Error:", error);

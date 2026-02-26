@@ -658,4 +658,37 @@
         
         export default ChatRoom;
         
+        if (!conversation) {
+  return (
+    <div className="flex-1 flex items-center justify-center bg-gray-50">
+      <div className="text-center p-8 bg-white rounded-2xl shadow-md max-w-sm w-full">
         
+        {/* Icon */}
+        <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 text-2xl">
+          💬
+        </div>
+
+        {/* Title */}
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          No Conversation Selected
+        </h2>
+
+        {/* Description */}
+        <p className="text-gray-500 mb-6">
+          Choose a user from the sidebar to start chatting instantly.
+        </p>
+
+        {/* Button */}
+        <button
+          onClick={() => {
+            // optional: scroll to users list or trigger open users modal
+            console.log("Select user clicked");
+          }}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-xl transition duration-200"
+        >
+          Select User
+        </button>
+      </div>
+    </div>
+  );
+}

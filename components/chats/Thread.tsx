@@ -1,5 +1,5 @@
 "use client";
-
+import { getSocket, connectSocket } from "@/lib/socket";
 import { useEffect, useState } from "react";
 import { Search, Plus } from "lucide-react";
 import {
@@ -7,7 +7,7 @@ import {
   createOrGetDirectConversation,
   Conversation,
 } from "@/srevices/chat";
-
+import { getConversationName, getInitial } from "./chat";
 import { getUsers } from "@/srevices/user";
 
 interface User {
@@ -65,6 +65,58 @@ const Thread = ({ onSelectConversation }: Props) => {
 
   }, [userId]);
 
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  connectSocket(token);
+}, []);
+                  //  todo thread update on starting new conversation
+  useEffect(() => {
+  const socket = getSocket();
+
+  socket.on("newConversation", (conversation) => {
+    setConversations((prev) => {
+      const exists = prev.find(c => c._id === conversation._id);
+      if (exists) return prev;
+      return [conversation, ...prev];
+    });
+  });
+
+  return () => {
+    socket.off("newConversation");
+  };
+}, []);
+
+  useEffect(() => {
+  const socket = getSocket();
+
+  socket.on("conversationUpdated", ({ conversationId, lastMessage }) => {
+    setConversations((prev) => {
+      const updated = prev.map((conv) =>
+        conv._id === conversationId
+          ? {
+              ...conv,
+              lastMessage,
+              lastActivity: lastMessage.createdAt,
+            }
+          : conv
+      );
+
+      return updated.sort(
+        (a, b) =>
+          new Date(b.lastActivity).getTime() -
+          new Date(a.lastActivity).getTime()
+      );
+    });
+  });
+  
+
+  return () => {
+    socket.off("conversationUpdated");
+  };
+}, []);
+    //  get existing users
   const fetchUsers = async () => {
     try {
       const data = await getUsers();
@@ -78,14 +130,14 @@ const Thread = ({ onSelectConversation }: Props) => {
       setError("Failed to load users");
     }
   };
-
+           
   useEffect(() => {
     if (activeTab === "users") {
       fetchUsers();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, userId]);
-
+   // thread seaarch and select conversation
   const handleStartChat = async (selectedUser: User) => {
     if (!userId || creatingChat === selectedUser._id) return;
 
@@ -95,14 +147,16 @@ const Thread = ({ onSelectConversation }: Props) => {
         userId,
         selectedUser._id || selectedUser.id || ""
       );
+if (conversation) {
+  setConversations((prev) => {
+    const exists = prev.find((c) => c._id === conversation._id);
+    if (exists) return prev;
+    return [conversation, ...prev]; // add on top
+  });
 
-      if (conversation) {
-        
-       
-        //deselect user and go back to conversations
-        setActiveTab("conversations");
-        onSelectConversation(conversation);
-      } else {
+  setActiveTab("conversations");
+  onSelectConversation(conversation);
+} else {
         setError("Failed to start conversation");
       }
     } catch (err) {
@@ -112,27 +166,10 @@ const Thread = ({ onSelectConversation }: Props) => {
       setCreatingChat(null);
     }
   };
+  console.log("ccccc🚀 ~ handleStartChat ~ handleStartChat:", handleStartChat)
 
-const getInitial = (name?: string) => {
-  if (!name) return "?";
-  return name.charAt(0).toUpperCase();
-};
 
-const getConversationName = (conv: Conversation, userId: string) => {
-  if (conv.type === "group") return conv.name || "Group Chat";
-
-  const otherUser = conv.participants.find(
-    (p: any) => p._id !== userId
-  );
-
-  return otherUser?.name || "Direct Chat";
-};
-
-  
-
-  const filteredConversations = conversations
-  .filter((conv) => conv.lastMessage) 
-  .filter((conv) =>
+  const filteredConversations = conversations.filter((conv) => conv.lastMessage) .filter((conv) =>
     conv.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
