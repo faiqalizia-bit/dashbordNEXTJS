@@ -1,7 +1,7 @@
 "use client";
 
 import { connectSocket, getSocket } from "@/lib/socket";
-
+import { FiMoreVertical, FiEdit2, FiTrash2, FiStar } from "react-icons/fi";
 import { useEffect, useState, useRef } from "react";
 import {
   getMessages,
@@ -25,9 +25,10 @@ interface MessageWithSender extends Message {
 
 interface Props {
   conversation: Conversation | null;
+  onOpenUsers: () => void;
 }
 
-const ChatRoom = ({ conversation }: Props) => {
+const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
   const [messages, setMessages] = useState<MessageWithSender[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,7 @@ const ChatRoom = ({ conversation }: Props) => {
   const [userId, setUserId] = useState<string>("");
   const [userMap, setUserMap] = useState<Record<string, User>>({});
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -64,7 +66,7 @@ const ChatRoom = ({ conversation }: Props) => {
       try {
         const users = await getUsers();
         const map: Record<string, User> = {};
-        (users || []).forEach((user: any) => {
+        (users || []).forEach((user: User) => {
           const id = user._id || user.id;
           if (id) {
             map[id] = {
@@ -83,7 +85,6 @@ const ChatRoom = ({ conversation }: Props) => {
 
     fetchUsers();
   }, []);
-
 
   useEffect(() => {
     if (!conversation || !userId) return;
@@ -126,8 +127,7 @@ const ChatRoom = ({ conversation }: Props) => {
       const nextPage = page + 1;
 
       try {
-
-        setMessages((prev) => [ ...prev]);
+        setMessages((prev) => [...prev]);
 
         setPage(nextPage);
       } catch (err) {
@@ -175,15 +175,14 @@ const ChatRoom = ({ conversation }: Props) => {
         content: messageContent,
       });
 
-      if (!newMessage) 
-        if (!newMessage) return;
+      if (!newMessage) if (!newMessage) return;
 
-// emit manually if backend doesn't
-const socket = getSocket();
-socket.emit("conversationUpdated", {
-  conversationId: conversation._id,
-  lastMessage: newMessage,
-});
+      // emit manually if backend doesn't
+      const socket = getSocket();
+      socket.emit("conversationUpdated", {
+        conversationId: conversation._id,
+        lastMessage: newMessage,
+      });
     } catch (err) {
       console.error("Send message error:", err);
     }
@@ -196,26 +195,28 @@ socket.emit("conversationUpdated", {
     }
   };
 
-if (!conversation) {
-  return (
-    <div className="flex-1 flex items-center justify-center bg-gray-50">
-      <div className="text-center p-8 bg-white rounded-2xl shadow-md max-w-sm w-full">
-        
-       
+  if (!conversation) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-gray-5 w-full ">
+        <div className="flex flex-col justify-center items-center p-8 ">
+          <h2 className="text-3xl font-bold  mb-2">
+           Welcome to Chat !
+          </h2>
 
-       
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          No Conversation Selected
-        </h2>
+          <p className=" text-gray-500 w-[70%] text-center mb-6">
+         Your conversation panel is ready. Messages and updates will appear here.
+          </p>
 
-        <p className=" text-gray-500 mb-6">choose a user from sidebar to start chat instantly</p>
-
-        <button className="p-5w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-xl transition duration-200">Select a User</button>
- 
+          <button
+            onClick={onOpenUsers}
+            className="w-auto bg-slate-900 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition duration-200"
+          >
+            Start Conversation 
+          </button>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   const getConversationName = () => {
     if (!conversation) return "";
@@ -225,7 +226,7 @@ if (!conversation) {
     const otherUser = conversation.participants.find(
       (p: any) => p._id !== userId,
     );
-    return otherUser?.name || "Direct Chat";
+    return otherUser?.name || "LOad";
   };
   console.log(
     "🚀 ~ getConversationName ~ getConversationName:",
@@ -265,7 +266,7 @@ if (!conversation) {
         {messages.map((msg) => (
           <div
             key={msg._id}
-            className={`flex gap-3 ${
+            className={` flex justify-center items-center gap-3 ${
               msg.senderId === userId ? "justify-end" : "justify-start"
             }`}
           >
@@ -278,15 +279,16 @@ if (!conversation) {
             )}
 
             <div
-              className={`flex flex-col items-center ${msg.senderId === userId ? "items-end" : "items-start"}`}
+              className={`relative flex justify-between   items-center  ${msg.senderId === userId ? "items-end" : "items-start"}`}
             >
               <div
-                className={`px-4 py-3 rounded-2xl shadow max-w-xs wrap-break-word ${
+                className={`  p-4 rounded-3xl shadow wrap-break-word ${
                   msg.senderId === userId
                     ? "bg-blue-500 text-white"
-                    : "bg-green-200 text-black"
+                    : "bg-green-200 text-black rounded-bl-md"
                 }`}
               >
+                <div className="p-0">
                 <p>{msg.content}</p>
                 <p className="text-xs mt-1 opacity-70">
                   {new Date(msg.createdAt || new Date()).toLocaleTimeString(
@@ -297,6 +299,38 @@ if (!conversation) {
                     },
                   )}
                 </p>
+                </div>
+              </div>
+              <div>
+
+                <button
+                  onClick={() =>
+                    setOpenMenuId(openMenuId === msg._id ? null : msg._id)
+                  }
+                  className="absolute top-1 right-0 p-1 text-gray-600 text-xs hover:text-black "
+                >
+                  <FiMoreVertical size={16} />
+                </button>
+
+               
+                {openMenuId === msg._id && (
+                  <div className="absolute top-4 right-3 mt-2 w-40 bg-white rounded-xl shadow-lg border z-50">
+                    <div className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
+                      <FiEdit2 size={14} />
+                      Edit
+                    </div>
+
+                    <div className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
+                      <FiStar size={14} />
+                      Star
+                    </div>
+
+                    <div className="flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-gray-100 cursor-pointer">
+                      <FiTrash2 size={14} />
+                      Delete
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -317,7 +351,7 @@ if (!conversation) {
         <button
           onClick={handleSend}
           disabled={!userId || !input.trim()}
-          className="bg-[#151f33] text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-[#1a212f] text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Send
         </button>
@@ -327,3 +361,4 @@ if (!conversation) {
 };
 
 export default ChatRoom;
+

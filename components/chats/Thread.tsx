@@ -43,7 +43,8 @@ const Thread = ({ onSelectConversation }: Props) => {
       }
     }
   }, []);
-
+      
+      //  fetch Cnvesations
   useEffect(() => {
     if (!userId) return;
 
@@ -71,7 +72,7 @@ const Thread = ({ onSelectConversation }: Props) => {
 
   connectSocket(token);
 }, []);
-                  //  todo thread update on starting new conversation
+                  // thread update on starting new conversation
   useEffect(() => {
   const socket = getSocket();
 
@@ -285,6 +286,7 @@ if (conversation) {
 
           {filteredUsers.map((user) => (
             <div
+            onClick={() => handleStartChat(user)}
               key={user._id}
               className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition"
             >
@@ -297,13 +299,13 @@ if (conversation) {
                 <p className="text-xs text-gray-500 truncate">{user.email}</p>
               </div>
 
-              <button
+              {/* <button
                 onClick={() => handleStartChat(user)}
                 disabled={creatingChat === user._id}
                 className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus className={`w-4 h-4 ${creatingChat === user._id ? "text-gray-400" : "text-[#151f33]"}`} />
-              </button>
+              </button> */}
             </div>
           ))}
         </div>

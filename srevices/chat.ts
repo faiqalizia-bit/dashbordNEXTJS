@@ -5,7 +5,11 @@ export interface Conversation {
   name:string,
   _id: string;
   type: "direct" | "group";
-  participants: string[];
+  participants:  {
+  _id: string;
+  name: string;
+  avatar?: string;
+}[];
   lastActivity: string;
   lastMessage?: {
     text: string;
