@@ -4,7 +4,7 @@ import API from "@/api";
 export interface Conversation {
   name:string,
   _id: string;
-  type: "direct" | "group";
+  // type: "direct" | "group";
   participants:  {
   _id: string;
   name: string;
@@ -92,6 +92,21 @@ export const sendMessage = async (data: {
   }
 };
 
+export const updateMessage = async (
+  messageId: string,
+  content: string
+): Promise<Message | null> => {
+  try {
+    const res = await API.put(`/chat/messages/${messageId}`, {
+      content,
+    });
+
+    return res.data;
+  } catch (error) {
+    console.error("Update Message Error:", error);
+    throw error;
+  }
+};
 // Mark as Read
 // export const markAsRead = async (
 //   messageId: string,

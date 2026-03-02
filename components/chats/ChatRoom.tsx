@@ -8,8 +8,10 @@ import {
   sendMessage,
   Message,
   Conversation,
+  updateMessage
 } from "@/srevices/chat";
 import { getUsers } from "@/srevices/user";
+import { getConversationName } from "./chat";
 
 interface User {
   _id?: string;
@@ -37,9 +39,11 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
   const [userMap, setUserMap] = useState<Record<string, User>>({});
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-
+  const [currentUserName, setCurrentUserName] = useState("");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
 
   const limit = 20;
 
@@ -49,6 +53,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
       try {
         const user = JSON.parse(userStr);
         setUserId(user._id || user.id || "");
+        setCurrentUserName(user.name || "");
         const token = localStorage.getItem("token");
 
         if (token) {
@@ -156,6 +161,8 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
       }
     });
 
+    
+
     return () => {
       socket.off("receiveMessage");
     };
@@ -175,7 +182,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
         content: messageContent,
       });
 
-      if (!newMessage) if (!newMessage) return;
+      if (!newMessage) return;
 
       // emit manually if backend doesn't
       const socket = getSocket();
@@ -194,53 +201,96 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
       handleSend();
     }
   };
+  {
+    /* edit msg */
+  }
+  const handleUpdate = async () => {
+    if (!editingMessageId || !editText.trim()|| !conversation) return;
+
+    try {
+      const updated = await updateMessage(editingMessageId, editText);
+
+      if (!updated) return;
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === editingMessageId ? { ...msg, content: editText } : msg,
+        ),
+      );
+
+  
+          const socket = getSocket();
+
+    socket.emit("conversationUpdated", {
+      conversationId: conversation._id,
+        lastMessage: updated,
+      
+    });
+
+      setEditingMessageId(null);
+      setEditText("");
+    } catch (err) {
+      console.error("Update failed", err);
+    }
+  };
+  console.log(" kya aya🚀 ~ handleUpdate ~ handleUpdate:", handleUpdate)
+
+
+  useEffect(() => {
+  const socket = getSocket();
+
+  socket.on("messageEdited", (updatedMessage) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === updatedMessage._id ? updatedMessage : msg
+      )
+    );
+  });
+
+  return () => {
+    socket.off("messageEdited");
+  };
+}, []);
+
+  
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditText("");
+  };
 
   if (!conversation) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-5 w-full ">
         <div className="flex flex-col justify-center items-center p-8 ">
-          <h2 className="text-3xl font-bold  mb-2">
-           Welcome to Chat !
-          </h2>
+          <h2 className="text-3xl font-bold  mb-2">Welcome to Chat !</h2>
 
           <p className=" text-gray-500 w-[70%] text-center mb-6">
-         Your conversation panel is ready. Messages and updates will appear here.
+            Your conversation panel is ready. Messages and updates will appear
+            here.
           </p>
 
           <button
             onClick={onOpenUsers}
             className="w-auto bg-slate-900 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition duration-200"
           >
-            Start Conversation 
+            Start Conversation
           </button>
         </div>
       </div>
     );
   }
 
-  const getConversationName = () => {
-    if (!conversation) return "";
-
-    if (conversation.type === "group") return conversation.name || "Group Chat";
-
-    const otherUser = conversation.participants.find(
-      (p: any) => p._id !== userId,
-    );
-    return otherUser?.name || "LOad";
-  };
-  console.log(
-    "🚀 ~ getConversationName ~ getConversationName:",
-    getConversationName,
-  );
-
   return (
     <div className="flex-1 bg-gray-50 dark:bg-gray-900 flex flex-col">
       {/* Header */}
       <div className="h-20 bg-white dark:bg-gray-800 border-b px-6 flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-[#151f33] text-white flex items-center justify-center font-semibold">
-          {getConversationName().charAt(0).toUpperCase()}
+          {getConversationName(conversation, userId).charAt(0).toUpperCase()}
         </div>
-        <p className="font-semibold text-lg">{getConversationName()}</p>
+        <p className="font-semibold text-lg">
+          {getConversationName(conversation, userId)}
+        </p>
       </div>
 
       {/* Messages */}
@@ -263,78 +313,123 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
           <div className="text-center text-gray-500">No messages yet</div>
         )}
 
-        {messages.map((msg) => (
-          <div
-            key={msg._id}
-            className={` flex justify-center items-center gap-3 ${
-              msg.senderId === userId ? "justify-end" : "justify-start"
-            }`}
-          >
-            {msg.senderId !== userId && (
-              <div className="flex">
-                <div className="w-10 h-10 rounded-full bg-[#151f33] text-white flex items-center justify-center font-semibold text-sm">
-                  {getConversationName().charAt(0).toUpperCase()}
-                </div>
-              </div>
-            )}
+        {messages.map((msg) => {
+          const isSender = msg.senderId === userId;
+          const otherUser = userMap[msg.senderId];
 
+          const initial = (
+            (isSender ? currentUserName : otherUser?.name) || "U"
+          )
+            .charAt(0)
+            .toUpperCase();
+
+          return (
             <div
-              className={`relative flex justify-between   items-center  ${msg.senderId === userId ? "items-end" : "items-start"}`}
+              key={msg._id}
+              className={` flex justify-center items-center gap-3 ${
+                msg.senderId === userId ? "justify-end" : "justify-start"
+              }`}
             >
-              <div
-                className={`  p-4 rounded-3xl shadow wrap-break-word ${
-                  msg.senderId === userId
-                    ? "bg-blue-500 text-white"
-                    : "bg-green-200 text-black rounded-bl-md"
-                }`}
-              >
-                <div className="p-0">
-                <p>{msg.content}</p>
-                <p className="text-xs mt-1 opacity-70">
-                  {new Date(msg.createdAt || new Date()).toLocaleTimeString(
-                    [],
-                    {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    },
-                  )}
-                </p>
-                </div>
+              <div className="w-10 h-10 rounded-full bg-[#151f33] text-white flex items-center justify-center font-semibold text-sm">
+                {initial}
               </div>
-              <div>
 
-                <button
-                  onClick={() =>
-                    setOpenMenuId(openMenuId === msg._id ? null : msg._id)
-                  }
-                  className="absolute top-1 right-0 p-1 text-gray-600 text-xs hover:text-black "
+              {/* Message Bubble */}
+              <div className="relative max-w-[60%]">
+                <div
+                  className={`p-4 rounded-3xl shadow  wrap-break-word ${
+                    isSender
+                      ? "bg-blue-500 text-white rounded-br-md"
+                      : "bg-green-200 text-black rounded-bl-md"
+                  }`}
                 >
-                  <FiMoreVertical size={16} />
-                </button>
+                  {/* Sender Name */}
+                  <p className="text-xs font-semibold mb-1 opacity-80">
+                    {isSender
+                      ? currentUserName
+                      : otherUser?.name || "Unknown User"}
+                  </p>
 
-               
-                {openMenuId === msg._id && (
-                  <div className="absolute top-4 right-3 mt-2 w-40 bg-white rounded-xl shadow-lg border z-50">
-                    <div className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
-                      <FiEdit2 size={14} />
-                      Edit
-                    </div>
+                  {/* Message Content */}
+                  {editingMessageId === msg._id ? (
+                    <div className="space-y-2">
+                      <input
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl text-black outline-none"
+                        autoFocus
+                      />
 
-                    <div className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
-                      <FiStar size={14} />
-                      Star
-                    </div>
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          onClick={handleCancelEdit}
+                          className="text-xs px-3 py-1 bg-gray-300 rounded-lg"
+                        >
+                          Cancel
+                        </button>
 
-                    <div className="flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-gray-100 cursor-pointer">
-                      <FiTrash2 size={14} />
-                      Delete
+                        <button
+                          onClick={handleUpdate}
+                          className="text-xs px-3 py-1 bg-blue-600 text-white rounded-lg"
+                        >
+                          Save
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <p>{msg.content}</p>
+                  )}
+
+                  <p className="text-xs mt-1 opacity-70 text-right">
+                    {new Date(msg.createdAt || new Date()).toLocaleTimeString(
+                      [],
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      },
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <button
+                    onClick={() =>
+                      setOpenMenuId(openMenuId === msg._id ? null : msg._id)
+                    }
+                    className="absolute top-1 right-0 p-1 text-gray-600 text-xs hover:text-black "
+                  >
+                    <FiMoreVertical size={16} />
+                  </button>
+
+                  {openMenuId === msg._id && (
+                    <div className="absolute top-4 right-3 mt-2 w-40 bg-white rounded-xl shadow-lg border z-50">
+                      <button
+                        onClick={() => {
+                          setEditingMessageId(msg._id);
+                          setEditText(msg.content);
+                          setOpenMenuId(null);
+                        }}
+                        className="flex items-center w-full gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                      >
+                        <FiEdit2 size={14} />
+                        Edit
+                      </button>
+
+                      <button className="flex items-center w-full gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
+                        <FiStar size={14} />
+                        Star
+                      </button>
+
+                      <button className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-gray-100 cursor-pointer">
+                        <FiTrash2 size={14} />
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Input */}
@@ -361,4 +456,3 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
 };
 
 export default ChatRoom;
-

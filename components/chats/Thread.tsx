@@ -28,7 +28,7 @@ const Thread = ({ onSelectConversation }: Props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"conversations" | "users">("conversations");
+
   const [creatingChat, setCreatingChat] = useState<string | null>(null);
 
 
@@ -99,7 +99,7 @@ const Thread = ({ onSelectConversation }: Props) => {
           ? {
               ...conv,
               lastMessage,
-              lastActivity: lastMessage.createdAt,
+              lastActivity: lastMessage.createdAt ,
             }
           : conv
       );
@@ -117,200 +117,174 @@ const Thread = ({ onSelectConversation }: Props) => {
     socket.off("conversationUpdated");
   };
 }, []);
+
+    
     //  get existing users
-  const fetchUsers = async () => {
-    try {
-      const data = await getUsers();
-     
-      const filtered = (data || []).filter(
-        (user: User) => (user._id || user.id) !== userId
-      );
-      setUsers(filtered);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users");
-    }
-  };
-           
   useEffect(() => {
-    if (activeTab === "users") {
-      fetchUsers();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, userId]);
-   // thread seaarch and select conversation
+    if (searchTerm.length === 0) return;
+
+    const fetchUsers = async () => {
+      try {
+        const data = await getUsers();
+        const filtered = (data || []).filter(
+          (user: User) => (user._id || user.id) !== userId
+        );
+        setUsers(filtered);
+      } catch {
+        setError("Failed to load users");
+      }
+    };
+
+    fetchUsers();
+  }, [searchTerm, userId]);
+           
+
   const handleStartChat = async (selectedUser: User) => {
     if (!userId || creatingChat === selectedUser._id) return;
 
     setCreatingChat(selectedUser._id);
+
     try {
       const conversation = await createOrGetDirectConversation(
         userId,
         selectedUser._id || selectedUser.id || ""
       );
-if (conversation) {
-  setConversations((prev) => {
-    const exists = prev.find((c) => c._id === conversation._id);
-    if (exists) return prev;
-    return [conversation, ...prev]; // add on top
-  });
 
-  setActiveTab("conversations");
-  onSelectConversation(conversation);
-} else {
-        setError("Failed to start conversation");
+      if (conversation) {
+        setConversations((prev) => {
+          const exists = prev.find((c) => c._id === conversation._id);
+          if (exists) return prev;
+          return [conversation, ...prev];
+        });
+
+        onSelectConversation(conversation);
+        setSearchTerm(""); // clear search like WhatsApp
       }
-    } catch (err) {
+    } catch {
       setError("Error starting conversation");
-      console.error("Error creating conversation:", err);
     } finally {
       setCreatingChat(null);
     }
   };
-  console.log("ccccc🚀 ~ handleStartChat ~ handleStartChat:", handleStartChat)
 
 
-  const filteredConversations = conversations.filter((conv) => conv.lastMessage) .filter((conv) =>
-    conv.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
-  const filteredUsers = users.filter((user) =>
-    (user.name || user.email).toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
+   const filteredConversations = conversations
+  .filter((conv) => conv.lastMessage) 
+  .filter((conv) => {
+    const name = getConversationName(conv, userId);
+    return name.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+
+//  Get userIds from conversations that already have messages
+const existingUserIds = conversations
+  .filter((conv) => conv.lastMessage) 
+  .map((c) =>
+    c.participants.find((p) => p._id !== userId)?._id
+  )
+  .filter(Boolean);
+
+//  Filter users ( when searching)
+const filteredUsers =
+  searchTerm.length > 0
+    ? users.filter(
+        (user) =>
+          !existingUserIds.includes(user._id) && 
+          (user.name || user.email)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+      )
+    : [];
+
 
   return (
-    <div className="w-80 bg-white dark:bg-gray-800 border-r p-5 flex flex-col">
+      <div className="w-80 bg-white dark:bg-gray-800 border-r p-5 flex flex-col">
       <h2 className="text-xl font-semibold mb-5">Chats</h2>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-4 border-b">
-        <button
-          onClick={() => setActiveTab("conversations")}
-          className={`px-4 py-2 font-medium text-sm border-b-2 transition ${
-            activeTab === "conversations"
-              ? "border-[#151f33] text-[#151f33]"
-              : "border-transparent text-gray-500"
-          }`}
-        >
-          Conversations
-        </button>
-        <button
-          onClick={() => setActiveTab("users")}
-          className={`px-4 py-2 font-medium text-sm border-b-2 transition ${
-            activeTab === "users"
-              ? "border-[#151f33] text-[#151f33]"
-              : "border-transparent text-gray-500"
-          }`}
-        >
-          Users
-        </button>
-      </div>
-
-      {/* Search Bar */}
+      {/* Search */}
       <div className="relative mb-6">
         <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          placeholder={activeTab === "conversations" ? "Search conversations..." : "Search users..."}
+          placeholder="Search chats or users..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl focus:outline-none"
         />
       </div>
 
-      {/* Error Message */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4 text-sm">
-          {error}
-        </div>
+        <div className="text-red-500 text-sm mb-3">{error}</div>
       )}
 
-      {/* Loading State */}
-      {loading && activeTab === "conversations" && (
-        <div className="text-center text-gray-500 py-8">Loading conversations...</div>
-      )}
+      <div className="flex flex-col gap-4 overflow-y-auto">
 
-      {/* Conversations Tab */}
-      {activeTab === "conversations" && (
-        <div className="flex flex-col gap-4 overflow-y-auto">
-          {filteredConversations.length === 0 && !loading && (
-            <div className="text-center text-gray-500 py-8">
-              {searchTerm ? "No conversations found" : "No conversations yet"}
-            </div>
-          )}
+        {searchTerm.length > 0 && loading && (
+  <div className="text-center text-gray-400 py-4 animate-pulse">
+    Searching users...
+  </div>
+)}
 
-         {filteredConversations.map((conv) => {
-  const lastActivityDate = new Date(conv.lastActivity);
-  const timeStr = lastActivityDate.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+        {/* Conversations */}
+        {filteredConversations.map((conv) => {
+          const conversationName = getConversationName(conv, userId);
 
-  const conversationName = getConversationName(conv, userId);
-
-  return (
-    <div
-      key={conv._id}
-      onClick={() => onSelectConversation(conv)}
-      className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
-    >
-      {/* Avatar */}
-      <div className="w-10 h-10 rounded-full bg-[#151f33] text-white flex items-center justify-center font-semibold shrink-0">
-        {getInitial(conversationName)}
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate">
-          {conversationName}
-        </p>
-        <p className="text-xs text-gray-500 truncate">
-          {conv.lastMessage?.text || "No messages yet"}
-        </p>
-        <p className="text-xs text-gray-400">{timeStr}</p>
-      </div>
-    </div>
-  );
-})}
-        </div>
-      )}
-
-      {/* Users Tab */}
-      {activeTab === "users" && (
-        <div className="flex flex-col gap-4 overflow-y-auto">
-          {filteredUsers.length === 0 && (
-            <div className="text-center text-gray-500 py-8">
-              {searchTerm ? "No users found" : "No users available"}
-            </div>
-          )}
-
-          {filteredUsers.map((user) => (
+          return (
             <div
-            onClick={() => handleStartChat(user)}
-              key={user._id}
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              key={conv._id}
+              onClick={() => onSelectConversation(conv)}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
             >
               <div className="w-10 h-10 rounded-full bg-[#151f33] text-white flex items-center justify-center font-semibold shrink-0">
-                {(user.name || user.email).charAt(0).toUpperCase()}
+                {getInitial(conversationName)}
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{user.name || user.email}</p>
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <p className="font-medium text-sm truncate">
+                  {conversationName}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {conv.lastMessage?.text || "No messages yet"}
+                </p>
               </div>
-
-              {/* <button
-                onClick={() => handleStartChat(user)}
-                disabled={creatingChat === user._id}
-                className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Plus className={`w-4 h-4 ${creatingChat === user._id ? "text-gray-400" : "text-[#151f33]"}`} />
-              </button> */}
             </div>
-          ))}
-        </div>
-      )}
+          );
+        })}
+
+        {/* Users (only when searching) */}
+        {searchTerm.length > 0 && filteredUsers.length > 0 && (
+          <>
+            <p className="text-xs text-gray-400 px-2 mt-4">
+              Start new chat
+            </p>
+
+            {filteredUsers.map((user) => (
+              <div
+                key={user._id}
+                onClick={() => handleStartChat(user)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
+              >
+                <div className="w-10 h-10 rounded-full bg-gray-500 text-white flex items-center justify-center font-semibold shrink-0">
+                  {(user.name || user.email).charAt(0).toUpperCase()}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">
+                    {user.name || user.email}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
     </div>
+
   );
 };
 
