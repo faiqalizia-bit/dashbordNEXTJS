@@ -107,6 +107,33 @@ export const updateMessage = async (
     throw error;
   }
 };
+
+export const deleteForMe = async (messageId: string) => {
+  try {
+    const res = await API.put(
+      `/chat/messages/delete/me/${messageId}`
+    );
+    return res;
+  } catch (error) {
+    console.error("Delete For Me Error:", error);
+    throw error;
+  }
+};
+
+
+
+export const deleteForEveryone = async (messageId: string) => {
+  try {
+    const res = await API.delete(
+      `/chat/messages/delete/everyone/${messageId}`
+    );
+    return res;
+  } catch (error) {
+    console.error("Delete For Everyone Error:", error);
+    throw error;
+  }
+};
+
 // Mark as Read
 // export const markAsRead = async (
 //   messageId: string,

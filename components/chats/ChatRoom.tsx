@@ -8,10 +8,12 @@ import {
   sendMessage,
   Message,
   Conversation,
-  updateMessage
+  updateMessage,
+ 
 } from "@/srevices/chat";
 import { getUsers } from "@/srevices/user";
 import { getConversationName } from "./chat";
+import DeletePopup from "./delModal";
 
 interface User {
   _id?: string;
@@ -23,6 +25,7 @@ interface User {
 interface MessageWithSender extends Message {
   senderName?: string;
   senderAvatar?: string;
+  isDeleted?: boolean;
 }
 
 interface Props {
@@ -44,6 +47,8 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
   const [hasMore, setHasMore] = useState(true);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>(null);
 
   const limit = 20;
 
@@ -161,8 +166,6 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
       }
     });
 
-    
-
     return () => {
       socket.off("receiveMessage");
     };
@@ -184,7 +187,6 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
 
       if (!newMessage) return;
 
-      // emit manually if backend doesn't
       const socket = getSocket();
       socket.emit("conversationUpdated", {
         conversationId: conversation._id,
@@ -205,7 +207,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
     /* edit msg */
   }
   const handleUpdate = async () => {
-    if (!editingMessageId || !editText.trim()|| !conversation) return;
+    if (!editingMessageId || !editText.trim() || !conversation) return;
 
     try {
       const updated = await updateMessage(editingMessageId, editText);
@@ -218,14 +220,11 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
         ),
       );
 
-  
-          const socket = getSocket();
-
-    socket.emit("conversationUpdated", {
-      conversationId: conversation._id,
+      const socket = getSocket();
+      socket.emit("conversationUpdated", {
+        conversationId: conversation._id,
         lastMessage: updated,
-      
-    });
+      });
 
       setEditingMessageId(null);
       setEditText("");
@@ -233,31 +232,91 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
       console.error("Update failed", err);
     }
   };
-  console.log(" kya aya🚀 ~ handleUpdate ~ handleUpdate:", handleUpdate)
-
+  console.log(" kya aya🚀 ~ handleUpdate ~ handleUpdate:", handleUpdate);
 
   useEffect(() => {
-  const socket = getSocket();
+    const socket = getSocket();
 
-  socket.on("messageEdited", (updatedMessage) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg._id === updatedMessage._id ? updatedMessage : msg
-      )
-    );
-  });
+    socket.on("messageEdited", (updatedMessage) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === updatedMessage._id ? updatedMessage : msg,
+        ),
+      );
+    });
 
-  return () => {
-    socket.off("messageEdited");
-  };
-}, []);
-
-  
+    return () => {
+      socket.off("messageEdited");
+    };
+  }, []);
 
   const handleCancelEdit = () => {
     setEditingMessageId(null);
     setEditText("");
   };
+
+//   const handleDeleteForMe = async (messageId: string) => {
+//   try {
+//     await deleteForMe(messageId);
+
+//     // Remove from UI immediately
+//     setMessages((prev) =>
+//       prev.filter((msg) => msg._id !== messageId)
+//     );
+//   } catch (err) {
+//     console.error("Delete For Me Error:", err);
+//   }
+// };
+
+
+
+// const handleDeleteForEveryone = async (messageId: string) => {
+//   try {
+//     await deleteForEveryone(messageId);
+
+//     // No need to manually remove if socket is working
+//     // But we can optimistically update
+//     setMessages((prev) =>
+//       prev.map((msg) =>
+//         msg._id === messageId
+//           ? { ...msg, isDeleted: true }
+//           : msg
+//       )
+//     );
+
+//     // Update conversation sidebar
+//     if (conversation) {
+//       const socket = getSocket();
+//       socket.emit("conversationUpdated", {
+//         conversationId: conversation._id,
+//       });
+//     }
+
+//   } catch (err) {
+//     console.error("Delete For Everyone Error:", err);
+//   }
+// };
+// console.log("llll🚀 ~ handleDeleteForEveryone ~ handleDeleteForEveryone:", handleDeleteForEveryone)
+
+// useEffect(() => {
+//   const socket = getSocket();
+
+//   socket.on("messageDeleted", ({ messageId }) => {
+//     setMessages((prev) =>
+//       prev.map((msg) =>
+//         msg._id === messageId
+//           ? { ...msg, isDeleted: true }
+//           : msg
+//       )
+//     );
+//   });
+
+//   return () => {
+//     socket.off("messageDeleted");
+//   };
+// }, []);
+
+
 
   if (!conversation) {
     return (
@@ -337,7 +396,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
               {/* Message Bubble */}
               <div className="relative max-w-[60%]">
                 <div
-                  className={`p-4 rounded-3xl shadow  wrap-break-word ${
+                  className={`p-4 rounded-3xl shadow max-w-xs wrap-break-word ${
                     isSender
                       ? "bg-blue-500 text-white rounded-br-md"
                       : "bg-green-200 text-black rounded-bl-md"
@@ -376,9 +435,17 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
                         </button>
                       </div>
                     </div>
-                  ) : (
-                    <p>{msg.content}</p>
-                  )}
+                 ) 
+// : msg.isDeleted ? (
+//   <p className="italic text-sm opacity-70">
+//     This message was deleted
+//   </p>
+// ) 
+: (
+  <p>{msg.content}</p>
+)}
+
+                  
 
                   <p className="text-xs mt-1 opacity-70 text-right">
                     {new Date(msg.createdAt || new Date()).toLocaleTimeString(
@@ -402,24 +469,33 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
 
                   {openMenuId === msg._id && (
                     <div className="absolute top-4 right-3 mt-2 w-40 bg-white rounded-xl shadow-lg border z-50">
-                      <button
-                        onClick={() => {
-                          setEditingMessageId(msg._id);
-                          setEditText(msg.content);
-                          setOpenMenuId(null);
-                        }}
-                        className="flex items-center w-full gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
-                      >
-                        <FiEdit2 size={14} />
-                        Edit
-                      </button>
+                      {isSender && (
+                        <button
+                          onClick={() => {
+                            setEditingMessageId(msg._id);
+                            setEditText(msg.content);
+                            setOpenMenuId(null);
+                          }}
+                          className="flex items-center w-full gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                        >
+                          <FiEdit2 size={14} />
+                          Edit
+                        </button>
+                      )}
 
                       <button className="flex items-center w-full gap-2 px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
                         <FiStar size={14} />
                         Star
                       </button>
 
-                      <button className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-gray-100 cursor-pointer">
+                      <button
+                        onClick={() => {
+                          setSelectedMessage(msg);
+                          setShowDeletePopup(true);
+                          setOpenMenuId(null);
+                        }}
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-gray-100 cursor-pointer"
+                      >
                         <FiTrash2 size={14} />
                         Delete
                       </button>
@@ -451,8 +527,29 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
           Send
         </button>
       </div>
+      <DeletePopup
+  isOpen={showDeletePopup}
+  isSender={selectedMessage?.senderId === userId}
+  onClose={() => setShowDeletePopup(false)}
+  // onDeleteForMe={() => {
+  //   if (selectedMessage) {
+  //     handleDeleteForMe(selectedMessage._id);
+  //   }
+  //   setShowDeletePopup(false);
+  // }}
+  // onDeleteForEveryone={() => {
+  //   if (selectedMessage) {
+  //     handleDeleteForEveryone(selectedMessage._id);
+  //   }
+  //   setShowDeletePopup(false);
+  // }}
+/>
     </div>
   );
 };
 
 export default ChatRoom;
+
+
+
+

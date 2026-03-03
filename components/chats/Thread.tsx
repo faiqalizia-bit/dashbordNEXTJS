@@ -158,7 +158,7 @@ const Thread = ({ onSelectConversation }: Props) => {
         });
 
         onSelectConversation(conversation);
-        setSearchTerm(""); // clear search like WhatsApp
+        setSearchTerm(""); 
       }
     } catch {
       setError("Error starting conversation");
