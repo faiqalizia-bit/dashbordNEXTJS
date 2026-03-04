@@ -10,6 +10,7 @@ export interface Conversation {
   name: string;
   avatar?: string;
 }[];
+isDeleted:boolean;
   lastActivity: string;
   lastMessage?: {
     text: string;
@@ -60,7 +61,7 @@ export const getUserConversations = async (
 
 export const getMessages = async (
   conversationId: string,page: number,
-  limit: number
+  limit: number,
 ): Promise<Message[]> => {
   try {
     const res = await API.get(`/chat/messages/${conversationId}?page=${page}&limit=${limit}`);
@@ -108,32 +109,20 @@ export const updateMessage = async (
   }
 };
 
-export const deleteForMe = async (messageId: string) => {
-  try {
-    const res = await API.put(
-      `/chat/messages/delete/me/${messageId}`
-    );
-    return res;
-  } catch (error) {
-    console.error("Delete For Me Error:", error);
-    throw error;
-  }
+
+export const deleteMessage = async (
+  messageId: string,
+  userId: string,
+  deleteType: string
+): Promise<Message | null> => {
+  const res = await API.delete(`/chat/messages/${messageId}`, {
+    data: {
+      userId,
+      deleteType,
+    },
+  });
+  return res.data;
 };
-
-
-
-export const deleteForEveryone = async (messageId: string) => {
-  try {
-    const res = await API.delete(
-      `/chat/messages/delete/everyone/${messageId}`
-    );
-    return res;
-  } catch (error) {
-    console.error("Delete For Everyone Error:", error);
-    throw error;
-  }
-};
-
 // Mark as Read
 // export const markAsRead = async (
 //   messageId: string,

@@ -9,11 +9,20 @@ import {
   Message,
   Conversation,
   updateMessage,
+  // deleteMessageForEveryone,
+  // deleteMessageForMe
+  deleteMessage
  
 } from "@/srevices/chat";
 import { getUsers } from "@/srevices/user";
 import { getConversationName } from "./chat";
 import DeletePopup from "./delModal";
+
+// interface DeleteMessageParams {
+//   messageId: string;
+//   userId: string;
+//   deleteType: string;
+// }
 
 interface User {
   _id?: string;
@@ -104,7 +113,7 @@ const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>
       setError(null);
 
       try {
-        const data = await getMessages(conversation._id, 1, limit);
+        const data = await getMessages(conversation._id, 1, limit,);
 
         if (data.length < limit) {
           setHasMore(false);
@@ -232,7 +241,7 @@ const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>
       console.error("Update failed", err);
     }
   };
-  console.log(" kya aya🚀 ~ handleUpdate ~ handleUpdate:", handleUpdate);
+ 
 
   useEffect(() => {
     const socket = getSocket();
@@ -255,67 +264,66 @@ const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>
     setEditText("");
   };
 
-//   const handleDeleteForMe = async (messageId: string) => {
-//   try {
-//     await deleteForMe(messageId);
 
-//     // Remove from UI immediately
-//     setMessages((prev) =>
-//       prev.filter((msg) => msg._id !== messageId)
-//     );
-//   } catch (err) {
-//     console.error("Delete For Me Error:", err);
-//   }
-// };
+  const handleDeleteForMe = async (messageId: string) => {
+  if (!userId) return;
+
+  try {
+    // Optimistic UI update (remove message only for you)
+    setMessages((prev) =>
+      prev.filter((msg) => msg._id !== messageId)
+    );
+    await deleteMessage(messageId, userId, "me");
+
+  } catch (err) {
+    console.error("Delete for me failed", err);
+  }
+};
 
 
+const handleDeleteForEveryone = async (messageId: string) => {
+  if (!userId || !conversation) return;
 
-// const handleDeleteForEveryone = async (messageId: string) => {
-//   try {
-//     await deleteForEveryone(messageId);
+  try {
+    await deleteMessage(messageId, userId, "everyone");
 
-//     // No need to manually remove if socket is working
-//     // But we can optimistically update
-//     setMessages((prev) =>
-//       prev.map((msg) =>
-//         msg._id === messageId
-//           ? { ...msg, isDeleted: true }
-//           : msg
-//       )
-//     );
+    // Optimistic update → mark as deleted
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === messageId
+          ? { ...msg, isDeleted: true, content: "" }
+          : msg
+      )
+    );
 
-//     // Update conversation sidebar
-//     if (conversation) {
-//       const socket = getSocket();
-//       socket.emit("conversationUpdated", {
-//         conversationId: conversation._id,
-//       });
-//     }
+    const socket = getSocket();
 
-//   } catch (err) {
-//     console.error("Delete For Everyone Error:", err);
-//   }
-// };
-// console.log("llll🚀 ~ handleDeleteForEveryone ~ handleDeleteForEveryone:", handleDeleteForEveryone)
+    socket.emit("conversationUpdated", {
+      conversationId: conversation._id,
+    });
 
-// useEffect(() => {
-//   const socket = getSocket();
+  } catch (err) {
+    console.error("Delete for everyone failed", err);
+  }
+};
 
-//   socket.on("messageDeleted", ({ messageId }) => {
-//     setMessages((prev) =>
-//       prev.map((msg) =>
-//         msg._id === messageId
-//           ? { ...msg, isDeleted: true }
-//           : msg
-//       )
-//     );
-//   });
+useEffect(() => {
+  const socket = getSocket();
 
-//   return () => {
-//     socket.off("messageDeleted");
-//   };
-// }, []);
+  socket.on("messageDeleted", ({ messageId }) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg._id === messageId
+          ? { ...msg, isDeleted: true }
+          : msg
+      )
+    );
+  });
 
+  return () => {
+    socket.off("messageDeleted");
+  };
+}, []);
 
 
   if (!conversation) {
@@ -436,11 +444,11 @@ const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>
                       </div>
                     </div>
                  ) 
-// : msg.isDeleted ? (
-//   <p className="italic text-sm opacity-70">
-//     This message was deleted
-//   </p>
-// ) 
+: msg.isDeleted ? (
+  <p className="italic text-sm opacity-70">
+    This message was deleted
+  </p>
+) 
 : (
   <p>{msg.content}</p>
 )}
@@ -531,18 +539,18 @@ const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>
   isOpen={showDeletePopup}
   isSender={selectedMessage?.senderId === userId}
   onClose={() => setShowDeletePopup(false)}
-  // onDeleteForMe={() => {
-  //   if (selectedMessage) {
-  //     handleDeleteForMe(selectedMessage._id);
-  //   }
-  //   setShowDeletePopup(false);
-  // }}
-  // onDeleteForEveryone={() => {
-  //   if (selectedMessage) {
-  //     handleDeleteForEveryone(selectedMessage._id);
-  //   }
-  //   setShowDeletePopup(false);
-  // }}
+  onDeleteForMe={() => {
+    if (selectedMessage) {
+      handleDeleteForMe(selectedMessage._id);
+    }
+    setShowDeletePopup(false);
+  }}
+  onDeleteForEveryone={() => {
+    if (selectedMessage) {
+      handleDeleteForEveryone(selectedMessage._id);
+    }
+    setShowDeletePopup(false);
+  }}
 />
     </div>
   );

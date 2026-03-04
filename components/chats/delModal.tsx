@@ -42,7 +42,7 @@ const DeletePopup = ({
 
 
                   <div className="flex flex-col items-end gap-4">
-        <h3 className=" absolute mr-2 top-2 left-1 text-lg font-semibold mb-5 text-center">
+        <h3 className=" absolute ml-2 top-2 left-1 text-lg font-semibold mb-5 text-center">
           Delete message?
         </h3>
               {isSender && (

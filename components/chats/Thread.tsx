@@ -7,7 +7,7 @@ import {
   createOrGetDirectConversation,
   Conversation,
 } from "@/srevices/chat";
-import { getConversationName, getInitial } from "./chat";
+import { getConversationName, getInitial, formatTime } from "./chat";
 import { getUsers } from "@/srevices/user";
 
 interface User {
@@ -31,7 +31,6 @@ const Thread = ({ onSelectConversation }: Props) => {
 
   const [creatingChat, setCreatingChat] = useState<string | null>(null);
 
-
   useEffect(() => {
     const userStr = localStorage.getItem("users");
     if (userStr) {
@@ -43,8 +42,8 @@ const Thread = ({ onSelectConversation }: Props) => {
       }
     }
   }, []);
-      
-      //  fetch Cnvesations
+
+  //  fetch Cnvesations
   useEffect(() => {
     if (!userId) return;
 
@@ -63,63 +62,60 @@ const Thread = ({ onSelectConversation }: Props) => {
     };
 
     fetchConversations();
-
   }, [userId]);
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-  connectSocket(token);
-}, []);
-                  // thread update on starting new conversation
+    connectSocket(token);
+  }, []);
+  // thread update on starting new conversation
   useEffect(() => {
-  const socket = getSocket();
+    const socket = getSocket();
 
-  socket.on("newConversation", (conversation) => {
-    setConversations((prev) => {
-      const exists = prev.find(c => c._id === conversation._id);
-      if (exists) return prev;
-      return [conversation, ...prev];
+    socket.on("newConversation", (conversation) => {
+      setConversations((prev) => {
+        const exists = prev.find((c) => c._id === conversation._id);
+        if (exists) return prev;
+        return [conversation, ...prev];
+      });
     });
-  });
 
-  return () => {
-    socket.off("newConversation");
-  };
-}, []);
+    return () => {
+      socket.off("newConversation");
+    };
+  }, []);
 
   useEffect(() => {
-  const socket = getSocket();
+    const socket = getSocket();
 
-  socket.on("conversationUpdated", ({ conversationId, lastMessage }) => {
-    setConversations((prev) => {
-      const updated = prev.map((conv) =>
-        conv._id === conversationId
-          ? {
-              ...conv,
-              lastMessage,
-              lastActivity: lastMessage.createdAt ,
-            }
-          : conv
-      );
+    socket.on("conversationUpdated", ({ conversationId, lastMessage }) => {
+      setConversations((prev) => {
+        const updated = prev.map((conv) =>
+          conv._id === conversationId
+            ? {
+                ...conv,
+                lastMessage,
+                lastActivity: lastMessage?.createdAt,
+              }
+            : conv,
+        );
 
-      return updated.sort(
-        (a, b) =>
-          new Date(b.lastActivity).getTime() -
-          new Date(a.lastActivity).getTime()
-      );
+        return updated.sort(
+          (a, b) =>
+            new Date(b.lastActivity).getTime() -
+            new Date(a.lastActivity).getTime(),
+        );
+      });
     });
-  });
-  
 
-  return () => {
-    socket.off("conversationUpdated");
-  };
-}, []);
+    return () => {
+      socket.off("conversationUpdated");
+    };
+  }, []);
 
-    
-    //  get existing users
+  //  get existing users
   useEffect(() => {
     if (searchTerm.length === 0) return;
 
@@ -127,7 +123,7 @@ const Thread = ({ onSelectConversation }: Props) => {
       try {
         const data = await getUsers();
         const filtered = (data || []).filter(
-          (user: User) => (user._id || user.id) !== userId
+          (user: User) => (user._id || user.id) !== userId,
         );
         setUsers(filtered);
       } catch {
@@ -137,7 +133,6 @@ const Thread = ({ onSelectConversation }: Props) => {
 
     fetchUsers();
   }, [searchTerm, userId]);
-           
 
   const handleStartChat = async (selectedUser: User) => {
     if (!userId || creatingChat === selectedUser._id) return;
@@ -147,7 +142,7 @@ const Thread = ({ onSelectConversation }: Props) => {
     try {
       const conversation = await createOrGetDirectConversation(
         userId,
-        selectedUser._id || selectedUser.id || ""
+        selectedUser._id || selectedUser.id || "",
       );
 
       if (conversation) {
@@ -158,7 +153,7 @@ const Thread = ({ onSelectConversation }: Props) => {
         });
 
         onSelectConversation(conversation);
-        setSearchTerm(""); 
+        setSearchTerm("");
       }
     } catch {
       setError("Error starting conversation");
@@ -167,40 +162,33 @@ const Thread = ({ onSelectConversation }: Props) => {
     }
   };
 
+  const filteredConversations = conversations
+    .filter((conv) => conv.lastMessage)
+    .filter((conv) => {
+      const name = getConversationName(conv, userId);
+      return name.toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
+  //  Get userIds from conversations that already have messages
+  const existingUserIds = conversations
+    .filter((conv) => conv.lastMessage)
+    .map((c) => c.participants.find((p) => p._id !== userId)?._id)
+    .filter(Boolean);
 
-
-   const filteredConversations = conversations
-  .filter((conv) => conv.lastMessage) 
-  .filter((conv) => {
-    const name = getConversationName(conv, userId);
-    return name.toLowerCase().includes(searchTerm.toLowerCase());
-  });
-
-
-//  Get userIds from conversations that already have messages
-const existingUserIds = conversations
-  .filter((conv) => conv.lastMessage) 
-  .map((c) =>
-    c.participants.find((p) => p._id !== userId)?._id
-  )
-  .filter(Boolean);
-
-//  Filter users ( when searching)
-const filteredUsers =
-  searchTerm.length > 0
-    ? users.filter(
-        (user) =>
-          !existingUserIds.includes(user._id) && 
-          (user.name || user.email)
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
-      )
-    : [];
-
+  //  Filter users ( when searching)
+  const filteredUsers =
+    searchTerm.length > 0
+      ? users.filter(
+          (user) =>
+            !existingUserIds.includes(user._id) &&
+            (user.name || user.email)
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()),
+        )
+      : [];
 
   return (
-      <div className="w-80 bg-white dark:bg-gray-800 border-r p-5 flex flex-col">
+    <div className="w-80 bg-white dark:bg-gray-800 border-r p-5 flex flex-col">
       <h2 className="text-xl font-semibold mb-5">Chats</h2>
 
       {/* Search */}
@@ -215,17 +203,14 @@ const filteredUsers =
         />
       </div>
 
-      {error && (
-        <div className="text-red-500 text-sm mb-3">{error}</div>
-      )}
+      {error && <div className="text-red-500 text-sm mb-3">{error}</div>}
 
       <div className="flex flex-col gap-4 overflow-y-auto">
-
         {searchTerm.length > 0 && loading && (
-  <div className="text-center text-gray-400 py-4 animate-pulse">
-    Searching users...
-  </div>
-)}
+          <div className="text-center text-gray-400 py-4 animate-pulse">
+            Searching users...
+          </div>
+        )}
 
         {/* Conversations */}
         {filteredConversations.map((conv) => {
@@ -245,9 +230,17 @@ const filteredUsers =
                 <p className="font-medium text-sm truncate">
                   {conversationName}
                 </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {conv.lastMessage?.text || "No messages yet"}
-                </p>
+                <div className="flex justify-between items-center gap-2">
+                  <p className="text-xs text-gray-500 truncate">
+                    {conv.lastMessage?.text || "No messages yet"}
+                  </p>
+
+                  {conv.lastMessage?.createdAt && (
+                    <span className="text-[12px] text-gray-700 whitespace-nowrap">
+                      {formatTime(conv.lastMessage.createdAt)}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -256,9 +249,7 @@ const filteredUsers =
         {/* Users (only when searching) */}
         {searchTerm.length > 0 && filteredUsers.length > 0 && (
           <>
-            <p className="text-xs text-gray-400 px-2 mt-4">
-              Start new chat
-            </p>
+            <p className="text-xs text-gray-400 px-2 mt-4">Start new chat</p>
 
             {filteredUsers.map((user) => (
               <div
@@ -274,9 +265,7 @@ const filteredUsers =
                   <p className="font-medium text-sm truncate">
                     {user.name || user.email}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {user.email}
-                  </p>
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
               </div>
             ))}
@@ -284,13 +273,7 @@ const filteredUsers =
         )}
       </div>
     </div>
-
   );
 };
 
 export default Thread;
-
-
-
-
-

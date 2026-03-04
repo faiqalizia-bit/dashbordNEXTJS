@@ -21,6 +21,31 @@ export const getConversationName = (
 };
 
 
+export const formatTime = (date?: string) => {
+  if (!date) return "";
+
+  const messageDate = new Date(date);
+  const now = new Date();
+
+  const isToday =
+    messageDate.getDate() === now.getDate() &&
+    messageDate.getMonth() === now.getMonth() &&
+    messageDate.getFullYear() === now.getFullYear();
+
+  if (isToday) {
+    return messageDate.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  return messageDate.toLocaleDateString([], {
+    day: "2-digit",
+    month: "short",
+  });
+};
+
+
   
 
  
