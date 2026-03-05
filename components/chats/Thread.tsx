@@ -97,7 +97,7 @@ const Thread = ({ onSelectConversation }: Props) => {
             ? {
                 ...conv,
                 lastMessage,
-                lastActivity: lastMessage?.createdAt,
+                lastActivity: lastMessage.createdAt,
               }
             : conv,
         );
@@ -233,7 +233,7 @@ const Thread = ({ onSelectConversation }: Props) => {
                 <div className="flex justify-between items-center gap-2">
                   <p className="text-xs text-gray-500 truncate">
                     {conv.lastMessage?.text || "No messages yet"}
-                  </p>
+</p>
 
                   {conv.lastMessage?.createdAt && (
                     <span className="text-[12px] text-gray-700 whitespace-nowrap">
