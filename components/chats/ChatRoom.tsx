@@ -1,7 +1,7 @@
 "use client";
 
 import { connectSocket, getSocket } from "@/lib/socket";
-import { FiMoreVertical, FiEdit2, FiTrash2, FiStar } from "react-icons/fi";
+import { FiMoreVertical, FiEdit2, FiTrash2, FiStar, FiCheck } from "react-icons/fi";
 import { useEffect, useState, useRef } from "react";
 import {
   getMessages,
@@ -9,10 +9,10 @@ import {
   Message,
   Conversation,
   updateMessage,
+  // markMessagesAsRead,
   // deleteMessageForEveryone,
   // deleteMessageForMe
-  deleteMessage
- 
+  deleteMessage,
 } from "@/srevices/chat";
 import { getUsers } from "@/srevices/user";
 import { getConversationName } from "./chat";
@@ -35,6 +35,7 @@ interface MessageWithSender extends Message {
   senderName?: string;
   senderAvatar?: string;
   isDeleted?: boolean;
+  status?: string;
 }
 
 interface Props {
@@ -57,7 +58,8 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [showDeletePopup, setShowDeletePopup] = useState(false);
-const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>(null);
+  const [selectedMessage, setSelectedMessage] =
+    useState<MessageWithSender | null>(null);
 
   const limit = 20;
 
@@ -113,7 +115,7 @@ const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>
       setError(null);
 
       try {
-        const data = await getMessages(conversation._id, 1, limit,);
+        const data = await getMessages(conversation._id, 1, limit);
 
         if (data.length < limit) {
           setHasMore(false);
@@ -127,12 +129,14 @@ const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>
 
         setMessages(enrichedMessages);
         setPage(1);
-      } catch (err) {
+        // await markMessagesAsRead(conversation._id, userId);
+      } catch  {
         setError("Failed to load messages");
       } finally {
         setLoading(false);
       }
     };
+    console.log("🚀 ~ fetchMessages ~ fetchMessages:", fetchMessages)
 
     fetchMessages();
   }, [conversation, userId, userMap]);
@@ -174,6 +178,7 @@ const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>
         setMessages((prev) => [...prev, message]);
       }
     });
+    
 
     return () => {
       socket.off("receiveMessage");
@@ -189,7 +194,11 @@ const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>
     try {
       const newMessage = await sendMessage({
         conversationId: conversation._id,
-        senderId: userId,
+        senderId: {
+          _id: userId,
+          name: currentUserName,
+          avatar: userMap[userId]?.avatar,
+        },
         type: "text",
         content: messageContent,
       });
@@ -241,7 +250,6 @@ const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>
       console.error("Update failed", err);
     }
   };
- 
 
   useEffect(() => {
     const socket = getSocket();
@@ -264,68 +272,74 @@ const [selectedMessage, setSelectedMessage] = useState<MessageWithSender | null>
     setEditText("");
   };
 
-
   const handleDeleteForMe = async (messageId: string) => {
-  if (!userId) return;
+    if (!userId) return;
 
-  try {
-    // Optimistic UI update (remove message only for you)
-    setMessages((prev) =>
-      prev.filter((msg) => msg._id !== messageId)
-    );
-    await deleteMessage(messageId, userId, "me");
+    try {
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+      await deleteMessage(messageId, userId, "me");
+    } catch (err) {
+      console.error("Delete for me failed", err);
+    }
+  };
 
-  } catch (err) {
-    console.error("Delete for me failed", err);
-  }
-};
+  const handleDeleteForEveryone = async (messageId: string) => {
+    if (!userId || !conversation) return;
 
+    try {
+      await deleteMessage(messageId, userId, "everyone");
 
-const handleDeleteForEveryone = async (messageId: string) => {
-  if (!userId || !conversation) return;
+      // Optimistic update → mark as deleted
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId
+            ? { ...msg, isDeleted: true, content: "" }
+            : msg,
+        ),
+      );
 
-  try {
-    await deleteMessage(messageId, userId, "everyone");
+    } catch (err) {
+      console.error("Delete for everyone failed", err);
+    }
+  };
 
-    // Optimistic update → mark as deleted
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg._id === messageId
-          ? { ...msg, isDeleted: true, content: "" }
-          : msg
-      )
-    );
-
+  useEffect(() => {
     const socket = getSocket();
 
-    socket.emit("conversationUpdated", {
-      conversationId: conversation._id,
+    socket.on("messageDeleted", ({ messageId }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId ? { ...msg, isDeleted: true } : msg,
+        ),
+      );
     });
 
-  } catch (err) {
-    console.error("Delete for everyone failed", err);
-  }
-};
+    
+    return () => {
+      socket.off("messageDeleted");
+    };
+  }, []);
+  {/* MARK-READ*/}
 
-useEffect(() => {
-  const socket = getSocket();
+//  useEffect(() => {
+//   const socket = getSocket();
 
-  socket.on("messageDeleted", ({ messageId }) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg._id === messageId
-          ? { ...msg, isDeleted: true }
-          : msg
-      )
-    );
-  });
+//   socket.on("messagesRead", ({ conversationId }) => {
+//     setMessages((prev) =>
+//       prev.map((msg) =>
+//         msg.conversationId === conversationId
+//           ? { ...msg, status: "read", isRead: true }
+//           : msg
+//       )
+//     );
+//   });
 
-  return () => {
-    socket.off("messageDeleted");
-  };
-}, []);
-
-
+//   return () => {
+//     socket.off("messagesRead");
+//   };
+// }, []);
+  
+  
   if (!conversation) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-5 w-full ">
@@ -406,7 +420,7 @@ useEffect(() => {
                 <div
                   className={`p-4 rounded-3xl shadow max-w-xs wrap-break-word ${
                     isSender
-                      ? "bg-blue-500 text-white rounded-br-md"
+                      ? "bg-white rounded-br-md"
                       : "bg-green-200 text-black rounded-bl-md"
                   }`}
                 >
@@ -443,27 +457,40 @@ useEffect(() => {
                         </button>
                       </div>
                     </div>
-                 ) 
-: msg.isDeleted ? (
-  <p className="italic text-sm opacity-70">
-    This message was deleted
-  </p>
-) 
-: (
-  <p>{msg.content}</p>
-)}
+                  ) : msg.isDeleted ? (
+                    <p className="italic text-sm opacity-70">
+                      This message was deleted
+                    </p>
+                  ) : (
+                    <p>{msg.content}</p>
+                  )}
 
-                  
+                  <div className="flex items-center justify-end gap-1 text-xs mt-1 opacity-70">
+  <span>
+    {new Date(msg.createdAt || new Date()).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}
+  </span>
 
-                  <p className="text-xs mt-1 opacity-70 text-right">
-                    {new Date(msg.createdAt || new Date()).toLocaleTimeString(
-                      [],
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      },
-                    )}
-                  </p>
+ 
+
+  {/* DELIVERED */}
+  {isSender  &&   (
+    <span className="flex text-gray-300">
+      <FiCheck className="-mr-2" size={14} />
+      <FiCheck size={14} />
+    </span>
+  )}
+
+  {/* READ */}
+  {isSender && msg.status === "read" && (
+    <span className="flex text-blue-800">
+      <FiCheck className="-mr-1" size={14} />
+      <FiCheck size={14} />
+    </span>
+  )}
+</div>
                 </div>
                 <div>
                   <button
@@ -536,28 +563,24 @@ useEffect(() => {
         </button>
       </div>
       <DeletePopup
-  isOpen={showDeletePopup}
-  isSender={selectedMessage?.senderId === userId}
-  onClose={() => setShowDeletePopup(false)}
-  onDeleteForMe={() => {
-    if (selectedMessage) {
-      handleDeleteForMe(selectedMessage._id);
-    }
-    setShowDeletePopup(false);
-  }}
-  onDeleteForEveryone={() => {
-    if (selectedMessage) {
-      handleDeleteForEveryone(selectedMessage._id);
-    }
-    setShowDeletePopup(false);
-  }}
-/>
+        isOpen={showDeletePopup}
+        isSender={selectedMessage?.senderId === userId}
+        onClose={() => setShowDeletePopup(false)}
+        onDeleteForMe={() => {
+          if (selectedMessage) {
+            handleDeleteForMe(selectedMessage._id);
+          }
+          setShowDeletePopup(false);
+        }}
+        onDeleteForEveryone={() => {
+          if (selectedMessage) {
+            handleDeleteForEveryone(selectedMessage._id);
+          }
+          setShowDeletePopup(false);
+        }}
+      />
     </div>
   );
 };
 
 export default ChatRoom;
-
-
-
-

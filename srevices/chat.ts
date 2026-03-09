@@ -16,6 +16,7 @@ isDeleted:boolean;
     text: string;
     sender: string;
     createdAt: string;
+     isRead?:boolean
   };
 }
 
@@ -27,6 +28,7 @@ export interface Message {
   content: string;
   createdAt?: string;
   timestamp?: string;
+ 
 }
 
 export const createOrGetDirectConversation = async (
@@ -123,20 +125,17 @@ export const deleteMessage = async (
   });
   return res.data;
 };
-// Mark as Read
-// export const markAsRead = async (
-//   messageId: string,
+
+
+// export const markMessagesAsRead = async (
+//   conversationId: string,
 //   userId: string
-// ): Promise<boolean> => {
+// ) => {
 //   try {
-//     await api.post("/chat/read", {
-//       messageId,
+//     await API.put(`/chat/messages/read/${conversationId}`, {
 //       userId,
 //     });
-
-//     return true;
 //   } catch (error) {
-//     console.error("Mark Read Error:", error);
-//     return false;
+//     console.error("Mark read error:", error);
 //   }
 // };

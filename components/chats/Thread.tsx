@@ -2,6 +2,7 @@
 import { getSocket, connectSocket } from "@/lib/socket";
 import { useEffect, useState } from "react";
 import { Search, Plus } from "lucide-react";
+import { FiCheck } from "react-icons/fi";
 import {
   getUserConversations,
   createOrGetDirectConversation,
@@ -87,6 +88,8 @@ const Thread = ({ onSelectConversation }: Props) => {
     };
   }, []);
 
+  
+
   useEffect(() => {
     const socket = getSocket();
 
@@ -97,7 +100,7 @@ const Thread = ({ onSelectConversation }: Props) => {
             ? {
                 ...conv,
                 lastMessage,
-                lastActivity: lastMessage.createdAt,
+                lastActivity: lastMessage?.createdAt,
               }
             : conv,
         );
@@ -187,6 +190,9 @@ const Thread = ({ onSelectConversation }: Props) => {
         )
       : [];
 
+
+      
+
   return (
     <div className="w-80 bg-white dark:bg-gray-800 border-r p-5 flex flex-col">
       <h2 className="text-xl font-semibold mb-5">Chats</h2>
@@ -217,32 +223,50 @@ const Thread = ({ onSelectConversation }: Props) => {
           const conversationName = getConversationName(conv, userId);
 
           return (
-            <div
-              key={conv._id}
-              onClick={() => onSelectConversation(conv)}
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
-            >
-              <div className="w-10 h-10 rounded-full bg-[#151f33] text-white flex items-center justify-center font-semibold shrink-0">
-                {getInitial(conversationName)}
-              </div>
+           <div
+  key={conv._id}
+  onClick={() => onSelectConversation(conv)}
+  className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition"
+>
+  <div className="w-10 h-10 rounded-full bg-[#151f33] text-white flex items-center justify-center font-semibold shrink-0">
+    {getInitial(conversationName)}
+  </div>
 
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">
-                  {conversationName}
-                </p>
-                <div className="flex justify-between items-center gap-2">
-                  <p className="text-xs text-gray-500 truncate">
-                    {conv.lastMessage?.text || "No messages yet"}
-</p>
+  <div className="flex-1 min-w-0">
+    <p className="font-medium text-sm truncate">
+      {conversationName}
+    </p>
 
-                  {conv.lastMessage?.createdAt && (
-                    <span className="text-[12px] text-gray-700 whitespace-nowrap">
-                      {formatTime(conv.lastMessage.createdAt)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
+    <div className="flex justify-between items-center gap-2">
+      <p className="text-xs text-gray-500 truncate flex items-center gap-1">
+        
+        {/* READ TICKS */}
+        {conv.lastMessage?.isRead && (
+          <span className="flex text-blue-500">
+            <FiCheck className="-mr-1" size={14} />
+            <FiCheck size={14} />
+          </span>
+        )}
+
+        {/* DELIVERED TICKS */}
+         {conv.lastMessage && (
+          <span className="flex text-gray-400">
+            <FiCheck className="-mr-2" size={14} />
+            <FiCheck size={14} />
+          </span>
+        )}
+
+        {conv.lastMessage?.text || "No messages yet"}
+      </p>
+
+      {conv.lastMessage?.createdAt && (
+        <span className="text-[12px] text-gray-700 whitespace-nowrap">
+          {formatTime(conv.lastMessage.createdAt)}
+        </span>
+      )}
+    </div>
+  </div>
+</div>
           );
         })}
 
