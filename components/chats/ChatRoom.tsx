@@ -9,14 +9,13 @@ import {
   Message,
   Conversation,
   updateMessage,
-  // markMessagesAsRead,
-  // deleteMessageForEveryone,
-  // deleteMessageForMe
+  markMessagesAsRead,
   deleteMessage,
 } from "@/srevices/chat";
 import { getUsers } from "@/srevices/user";
 import { getConversationName } from "./chat";
 import DeletePopup from "./delModal";
+import MessageTicks from "./MessageTicks";
 
 // interface DeleteMessageParams {
 //   messageId: string;
@@ -130,6 +129,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
         setMessages(enrichedMessages);
         setPage(1);
         // await markMessagesAsRead(conversation._id, userId);
+        await markConversationRead();
       } catch  {
         setError("Failed to load messages");
       } finally {
@@ -140,6 +140,27 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
 
     fetchMessages();
   }, [conversation, userId, userMap]);
+
+  const markConversationRead = async () => {
+  if (!conversation || !userId) return;
+  
+  try {
+    await markMessagesAsRead(conversation._id, userId);
+
+    // Update local state to mark messages as read
+    setMessages(prev =>
+      prev.map(msg =>
+        msg.status !== "read"
+          ? { ...msg, status: "read", isRead: true }
+          : msg
+      )
+    );
+  } catch (err) {
+    console.error("Mark as read failed", err);
+  }
+};
+
+
 
   const handleScroll = async () => {
     const container = messagesContainerRef.current;
@@ -165,7 +186,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
         messagesContainerRef.current.scrollHeight;
     }
   }, [messages, page]);
-
+  // --- Socket setup ---
   useEffect(() => {
     if (!conversation) return;
 
@@ -173,15 +194,60 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
 
     socket.emit("joinConversation", conversation._id);
 
-    socket.on("receiveMessage", (message) => {
+    socket.on("receiveMessage", async(message) => {
       if (message.conversationId === conversation._id) {
         setMessages((prev) => [...prev, message]);
+        await markConversationRead();
       }
+    });
+
+    socket.on("messagesDelivered", ({ conversationId }) => {
+    if (conversationId !== conversation._id) return;
+
+    setMessages(prev =>
+      prev.map(msg =>
+        msg.status === "sent"
+          ? { ...msg, status: "delivered" }
+          : msg
+      )
+    );
+  });
+
+  socket.on("messagesRead", ({ conversationId }) => {
+    if (conversationId !== conversation._id) return;
+
+    setMessages(prev =>
+      prev.map(msg =>
+        msg.status !== "read"
+          ? { ...msg, status: "read" }
+          : msg
+      )
+    );
+  });
+
+  socket.on("messageEdited", (updatedMessage) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === updatedMessage._id ? updatedMessage : msg,
+        ),
+      );
+    });
+
+    socket.on("messageDeleted", ({ messageId }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId ? { ...msg, isDeleted: true } : msg,
+        ),
+      );
     });
     
 
     return () => {
       socket.off("receiveMessage");
+      socket.off("messagesDelivered");
+    socket.off("messagesRead");
+    socket.off("messageEdited");
+    socket.off("messageDeleted");
     };
   }, [conversation]);
 
@@ -251,21 +317,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
     }
   };
 
-  useEffect(() => {
-    const socket = getSocket();
-
-    socket.on("messageEdited", (updatedMessage) => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg._id === updatedMessage._id ? updatedMessage : msg,
-        ),
-      );
-    });
-
-    return () => {
-      socket.off("messageEdited");
-    };
-  }, []);
+ 
 
   const handleCancelEdit = () => {
     setEditingMessageId(null);
@@ -303,41 +355,28 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
     }
   };
 
-  useEffect(() => {
-    const socket = getSocket();
-
-    socket.on("messageDeleted", ({ messageId }) => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg._id === messageId ? { ...msg, isDeleted: true } : msg,
-        ),
-      );
-    });
-
-    
-    return () => {
-      socket.off("messageDeleted");
-    };
-  }, []);
+  
   {/* MARK-READ*/}
 
-//  useEffect(() => {
-//   const socket = getSocket();
+ useEffect(() => {
+  const socket = getSocket();
 
-//   socket.on("messagesRead", ({ conversationId }) => {
-//     setMessages((prev) =>
-//       prev.map((msg) =>
-//         msg.conversationId === conversationId
-//           ? { ...msg, status: "read", isRead: true }
-//           : msg
-//       )
-//     );
-//   });
+  socket.on("messagesRead", ({ conversationId }) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.conversationId === conversationId
+          ? { ...msg, status: "read", isRead: true }
+          : msg
+      )
+    );
+  });
 
-//   return () => {
-//     socket.off("messagesRead");
-//   };
-// }, []);
+  return () => {
+    socket.off("messagesRead");
+  };
+}, []);
+
+
   
   
   if (!conversation) {
@@ -476,20 +515,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
  
 
   {/* DELIVERED */}
-  {isSender  &&   (
-    <span className="flex text-gray-300">
-      <FiCheck className="-mr-2" size={14} />
-      <FiCheck size={14} />
-    </span>
-  )}
-
-  {/* READ */}
-  {isSender && msg.status === "read" && (
-    <span className="flex text-blue-800">
-      <FiCheck className="-mr-1" size={14} />
-      <FiCheck size={14} />
-    </span>
-  )}
+  {isSender && <MessageTicks status={msg.status} />}
 </div>
                 </div>
                 <div>

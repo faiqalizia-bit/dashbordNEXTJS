@@ -10,6 +10,7 @@ import {
 } from "@/srevices/chat";
 import { getConversationName, getInitial, formatTime } from "./chat";
 import { getUsers } from "@/srevices/user";
+import MessageTicks from "./MessageTicks";
 
 interface User {
   _id: string;
@@ -240,21 +241,8 @@ const Thread = ({ onSelectConversation }: Props) => {
     <div className="flex justify-between items-center gap-2">
       <p className="text-xs text-gray-500 truncate flex items-center gap-1">
         
-        {/* READ TICKS */}
-        {conv.lastMessage?.isRead && (
-          <span className="flex text-blue-500">
-            <FiCheck className="-mr-1" size={14} />
-            <FiCheck size={14} />
-          </span>
-        )}
-
-        {/* DELIVERED TICKS */}
-         {conv.lastMessage && (
-          <span className="flex text-gray-400">
-            <FiCheck className="-mr-2" size={14} />
-            <FiCheck size={14} />
-          </span>
-        )}
+       
+       <MessageTicks status={conv.lastMessage?.status} />
 
         {conv.lastMessage?.text || "No messages yet"}
       </p>

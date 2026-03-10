@@ -1,3 +1,49 @@
+    //   const markConversationRead = async () => {
+    //    if (!conversation || !userId) return;
+       
+    //    try {
+    //      await markMessagesAsRead(conversation._id, userId);
+     
+    //      // Update local state to mark messages as read
+    //      setMessages(prev =>
+    //        prev.map(msg =>
+    //          msg.status !== "read"
+    //            ? { ...msg, status: "read", isRead: true }
+    //            : msg
+    //        )
+    //      );
+    //    } catch (err) {
+    //      console.error("Mark as read failed", err);
+    //    }
+    //  };
+     
+    //  useEffect(() => {
+    //    if (!conversation) return;
+     
+    //    // Call mark as read when the conversation is opened
+    //    markConversationRead();
+    //  }, [conversation]);
+     
+     
+    const markConversationRead = async () => {
+      if (!conversation || !userId) return;
+      
+      try {
+        await markMessagesAsRead(conversation._id, userId);
+    
+        // Update local state to mark messages as read
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.status !== "read"
+              ? { ...msg, status: "read", isRead: true }
+              : msg
+          )
+        );
+      } catch (err) {
+        console.error("Mark as read failed", err);
+      }
+    };
+     
      <div className="h-[90vh] bg-gray-100 dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden flex">
         {/* left pannel / Threads / chats */}
         <div className="w-80 bg-white dark:bg-gray-800 border-r p-5 flex flex-col ">

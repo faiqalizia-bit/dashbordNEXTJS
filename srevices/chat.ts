@@ -8,7 +8,7 @@ export interface Conversation {
   participants:  {
   _id: string;
   name: string;
-  avatar?: string;
+  // avatar?: string;
 }[];
 isDeleted:boolean;
   lastActivity: string;
@@ -17,6 +17,7 @@ isDeleted:boolean;
     sender: string;
     createdAt: string;
      isRead?:boolean
+      status?:string;
   };
 }
 
@@ -28,7 +29,7 @@ export interface Message {
   content: string;
   createdAt?: string;
   timestamp?: string;
- 
+
 }
 
 export const createOrGetDirectConversation = async (
@@ -127,15 +128,15 @@ export const deleteMessage = async (
 };
 
 
-// export const markMessagesAsRead = async (
-//   conversationId: string,
-//   userId: string
-// ) => {
-//   try {
-//     await API.put(`/chat/messages/read/${conversationId}`, {
-//       userId,
-//     });
-//   } catch (error) {
-//     console.error("Mark read error:", error);
-//   }
-// };
+export const markMessagesAsRead = async (
+  conversationId: string,
+  userId: string
+) => {
+  try {
+    await API.put(`/chat/messages/read/${conversationId}`, {
+      userId,
+    });
+  } catch (error) {
+    console.error("Mark read error:", error);
+  }
+};
