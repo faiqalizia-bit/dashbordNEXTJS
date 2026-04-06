@@ -1,8 +1,8 @@
 "use client";
 import { getSocket, connectSocket } from "@/lib/socket";
 import { useEffect, useState } from "react";
-import { Search, Plus } from "lucide-react";
-import { FiCheck } from "react-icons/fi";
+import { Search } from "lucide-react";
+
 import {
   getUserConversations,
   createOrGetDirectConversation,
@@ -177,7 +177,7 @@ const Thread = ({ onSelectConversation }: Props) => {
   const existingUserIds = conversations
     .filter((conv) => conv.lastMessage)
     .map((c) => c.participants.find((p) => p._id !== userId)?._id)
-    .filter(Boolean);
+    
 
   //  Filter users ( when searching)
   const filteredUsers =
@@ -190,6 +190,8 @@ const Thread = ({ onSelectConversation }: Props) => {
               .includes(searchTerm.toLowerCase()),
         )
       : [];
+
+      
 
 
       

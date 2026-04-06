@@ -123,13 +123,13 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
         const enrichedMessages = data.map((msg: Message) => ({
           ...msg,
           senderName: userMap[msg.senderId]?.name || "Unknown User",
-          senderAvatar: userMap[msg.senderId]?.avatar,
+         
         }));
 
         setMessages(enrichedMessages);
         setPage(1);
         // await markMessagesAsRead(conversation._id, userId);
-        await markConversationRead();
+        // await markConversationRead();
       } catch  {
         setError("Failed to load messages");
       } finally {
@@ -358,23 +358,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
   
   {/* MARK-READ*/}
 
- useEffect(() => {
-  const socket = getSocket();
 
-  socket.on("messagesRead", ({ conversationId }) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.conversationId === conversationId
-          ? { ...msg, status: "read", isRead: true }
-          : msg
-      )
-    );
-  });
-
-  return () => {
-    socket.off("messagesRead");
-  };
-}, []);
 
 
   
@@ -515,7 +499,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
  
 
   {/* DELIVERED */}
-  {isSender && <MessageTicks status={msg.status} />}
+  {/* {isSender && <MessageTicks status={msg.status} />} */}
 </div>
                 </div>
                 <div>

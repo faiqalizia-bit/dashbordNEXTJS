@@ -21,7 +21,7 @@ export const getConversationName = (
 };
 
 
-export const formatTime = (date?: string) => {
+export const formatTime = (date: string) => {
   if (!date) return "";
 
   const messageDate = new Date(date);

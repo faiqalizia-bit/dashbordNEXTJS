@@ -5,11 +5,11 @@ export interface Conversation {
   name:string,
   _id: string;
   // type: "direct" | "group";
-  participants:  {
+  participants: [ {
   _id: string;
   name: string;
   // avatar?: string;
-}[];
+}];
 isDeleted:boolean;
   lastActivity: string;
   lastMessage?: {
