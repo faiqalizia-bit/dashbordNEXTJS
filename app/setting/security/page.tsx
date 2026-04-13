@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import {updateUser } from "@/srevices/user";
+import { updateUser } from "@/srevices/user";
 
 export default function PasswordPage() {
   const [userId, setUserId] = useState("");
@@ -14,7 +14,6 @@ export default function PasswordPage() {
   const [msg, setMsg] = useState("");
   const [type, setType] = useState<"success" | "error" | "">("");
 
- 
   useEffect(() => {
     const authUser = JSON.parse(localStorage.getItem("users") || "{}");
     if (authUser?.id) {
@@ -28,7 +27,6 @@ export default function PasswordPage() {
     setMsg("");
 
     if (!userId) return setMsg("User not found");
-
 
     if (!oldPassword || !newPassword || !confirmPassword) {
       setType("error");
@@ -55,11 +53,9 @@ export default function PasswordPage() {
       setType("success");
       setMsg(res.message || "Password updated successfully");
 
-    
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
-
     } catch {
       setType("error");
       setMsg("Password update failed");
