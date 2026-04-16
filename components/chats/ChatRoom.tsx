@@ -15,7 +15,7 @@ import {
 import { getUsers } from "@/srevices/user";
 import { getConversationName } from "./chat";
 import DeletePopup from "./delModal";
-import MessageTicks from "./MessageTicks";
+// import MessageTicks from "./MessageTicks";
 
 // interface DeleteMessageParams {
 //   messageId: string;
@@ -23,7 +23,7 @@ import MessageTicks from "./MessageTicks";
 //   deleteType: string;
 // }
 
-interface User {
+export interface User {
   _id?: string;
   id?: string;
   name: string;
@@ -87,10 +87,10 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
         const users = await getUsers();
         const map: Record<string, User> = {};
         (users || []).forEach((user: User) => {
-          const id = user._id || user.id;
+          const id = user._id ;
           if (id) {
             map[id] = {
-              _id: user._id || user.id,
+              _id: user._id ,
               id: user.id,
               name: user.name || "Unknown User",
               avatar: user.avatar,
@@ -280,7 +280,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
       console.error("Send message error:", err);
     }
   };
-
+//..
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -318,7 +318,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
   };
 
  
-
+//--------
   const handleCancelEdit = () => {
     setEditingMessageId(null);
     setEditText("");
@@ -334,7 +334,7 @@ const ChatRoom = ({ conversation, onOpenUsers }: Props) => {
       console.error("Delete for me failed", err);
     }
   };
-
+//-----
   const handleDeleteForEveryone = async (messageId: string) => {
     if (!userId || !conversation) return;
 

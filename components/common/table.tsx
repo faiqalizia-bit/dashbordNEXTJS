@@ -9,7 +9,7 @@ import {
 
 import { MdOutlineModeEditOutline } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
-import NoDataRow from "./NoDataRow";
+
 
 import type { TableProps as TablePropsType } from "@/types";
 
